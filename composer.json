@@ -1,0 +1,17 @@
+{
+    "name": "phidias/json",
+    "description": "JSON document parser and validation schema",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Santiago Cortés",
+            "email": "santiago.cortes@phidias.com"
+        }
+    ],
+
+    "autoload": {
+        "psr-4": {
+            "Phidias\\Json\\": "src/"
+        }
+    }
+}
