@@ -186,12 +186,10 @@ For example, take this very random JSON object:
     "firstName": "Santiago",
     "lastName": "Cortes",
     "birthDay": 123718974,
-
     "relatives": {
         "mother": "",
         "father": ""
     },
-
     "options": [1, 2, 3]
 }
 
@@ -204,15 +202,12 @@ Now look at it "schematized":
 {
     "$title": "Una persona",
     "$description": "Esquema que define una persona",
-
     "documentType": {"$oneOf": ["TI", "CC", "PP"]},
-
     "firstName": {
         "$type": "string",
         "$required": true,
         "$pattern": "[a-zA-Z]+"
     },
-
     "lastName": {
         "$type": "string",
         "$required": true,
@@ -220,18 +215,18 @@ Now look at it "schematized":
     },
 
     "$any": [
+
         {
 
             "$description": "cuando documentType = TI, document es obligatorio"
             "documentType": "TI",
-
             "document": {
                 "$type": "string",
                 "$required": true,
                 "$pattern": "[a-zA-Z]+"
             }
-
         },
+
         {
 
             "$description": "cuando documentType = CC, document debe empezar por A"
@@ -243,9 +238,8 @@ Now look at it "schematized":
                 "$pattern": "a[a-zA-Z]+"
             }
 
-        }        
+        }
     ],
-
 
 
     "birthDay": {"$type": "date"},
@@ -279,7 +273,7 @@ Este principio aplicado a un RESOURCE:
 
 
 {
-    "path": "people/{personId}",
+    "url": "people/{personId}",
 
     "attributes": {
         "personId": {
@@ -288,27 +282,39 @@ Este principio aplicado a un RESOURCE:
         }
     },
 
-    "methods": {
+    "exchanges": [
 
-        "get": {
-            "response": {"$ref": "#/definitions/schemas/person"},
+        {
+            "request": {
+                "method": "get"
+            }
+
+            "response": {"$ref": "#/definitions/responses/person"}
         },
 
-        "put": {
-            "request": {"$ref": "#/definitions/schemas/person"},
-            "response": {"$ref": "#/definitions/schemas/person"}
+        {
+            "request": {
+                "method": "put",
+                "body": {"$ref": "#/definitions/schemas/person"}
+            },
+
+            "response": {"$ref": "#/definitions/responses/person"}
         },
 
-        "delete": {
-            "response": {"$ref": "#/definitions/schemas/person"}
+        {
+            "request": {
+                "method": "delete"
+            }
+
+            "response": {"$ref": "#/definitions/responses/person"}
         }
 
-    },
+    ],
 
 
     "definitions": {
 
-        "schemas": {
+        "responses": {
 
             "person": {
                 "$title": "Una persona",
