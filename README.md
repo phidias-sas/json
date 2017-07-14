@@ -1,4 +1,115 @@
-# Phidias JSON Schema
+# Phidias JSON Annotations
+
+Phidias JSON Annotations are a series of JSON properties (prefixed with "@")
+that describe its schema and behavior
+
+
+Take this JSON object for example:
+```
+{
+    "id": "123",
+    "firstName": "Santiago",
+    "lastName": "Cortes",
+    "birthday": "01/15/1982"
+}
+```
+
+And its annotated example
+```
+{
+    "@title": "Person Object",
+    "@type": "object",
+
+    "id": {
+        "@title": "Unique identifier",
+        "@type": "string",
+        "@pattern": "^[0-9]+",
+        "@required": true
+    },
+
+    "firstName": {
+        "@title": "First name",
+        "@type": "string",
+        "@pattern": "^[0-9]+",
+        "@required": true
+    },
+
+    "lastName": {
+        "@title": "Last Name",
+        "@type": "string",
+        "@required": true,
+
+        "@any": [
+            {
+                "@pattern": "[^0-9]",
+                "@message": "Last name may not contain numbers"
+            },
+
+            {
+                "@pattern": "[a-zA-Z'-]",
+                "@message": "Invalid characters detected"
+            },
+
+            {
+                "@pattern": "^[A-Z]",
+                "@message": "Last name must begin with capital letter"
+            }            
+        ]
+    },
+
+    "birthday": {
+        "@title": "Date of birth",
+        "@type": "date"
+    },
+
+    "something": {
+        "@any": [
+            {
+                "@type": "string",
+                "@pattern": "A(.)+",
+                "@message": "Something strings must begin with A"
+            },
+
+            {
+                "@type": "number"
+            }
+        ]
+    }
+}
+```
+
+
+#### @title
+#### @description
+#### @type
+#### @required
+#### @pattern
+#### @length
+#### @minLength
+#### @maxLength
+
+#### @ref
+#### @any
+
+
+
+
+### Using the PHP Class:
+
+use Phidias\JSON\Specification;
+
+$spec = new Specification($anAnnotatedJSONObject);
+
+$example = $spec->getExample();
+
+try {
+    $spec->validate($someObject);
+} catch (Phidias\Json\Validation\Exception $e) {
+    foreach ($e->validationErrors as $error) {
+
+    }
+}
+
 
 ### Every JSON object is a valid Phidias JSON Schema
 
@@ -185,7 +296,7 @@ For example, take this very random JSON object:
     "document": 123,
     "firstName": "Santiago",
     "lastName": "Cortes",
-    "birthDay": 123718974,
+    "birthday": 123718974,
     "relatives": {
         "mother": "",
         "father": ""
@@ -242,7 +353,7 @@ Now look at it "schematized":
     ],
 
 
-    "birthDay": {"$type": "date"},
+    "birthday": {"$type": "date"},
 
     "relatives": {
         "mother": {
