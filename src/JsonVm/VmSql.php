@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\Core\Vm;
+namespace Phidias\JsonVm;
 
 /**
  * Returns a string with backslashes before characters that need to be escaped.

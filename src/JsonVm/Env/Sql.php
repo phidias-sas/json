@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\Core\Vm\Env;
+namespace Phidias\JsonVm\Env;
 
 class Sql
 {

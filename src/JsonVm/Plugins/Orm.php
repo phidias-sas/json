@@ -1,8 +1,8 @@
 <?php
 
-namespace Phidias\Core\Vm\Plugins;
+namespace Phidias\JsonVm\Plugins;
 
-class Orm extends \Phidias\Core\Vm\Plugin
+class Orm extends \Phidias\JsonVm\Plugin
 {
     public static function install($vm)
     {

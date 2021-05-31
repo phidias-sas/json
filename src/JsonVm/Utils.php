@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\Core\Vm;
+namespace Phidias\JsonVm;
 
 class Utils
 {
