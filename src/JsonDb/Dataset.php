@@ -15,8 +15,8 @@ class Dataset
 
     public function addDatabase($dbName, $dbObject, $isDefault = false)
     {
-        if (!is_a($dbObject, 'Phidias\JsonDb\DatabaseInterface')) {
-            throw new \Exception("Database must implement Phidias\JsonDb\DatabaseInterface");
+        if (!is_a($dbObject, 'Phidias\JsonDb\Database')) {
+            throw new \Exception("Database must be of type Phidias\JsonDb\Database");
         }
 
         $this->databases[$dbName] = $dbObject;
@@ -108,11 +108,9 @@ class Dataset
             }
         }
 
-        if ($joinData) {
-            $table->match($joinData->keyName, $joinData->keyValue);
-
-            $table->attribute($joinData->keyName);
-            $properties[] = $joinData->keyName;
+        // Establecer condicionales ("where")
+        if (isset($query->where)) {
+            $table->where($query->where);
         }
 
         // Limite
@@ -121,6 +119,16 @@ class Dataset
             $limit = max(0, min($limit, $query->limit));
         }
         $table->limit($limit);
+
+
+        // Si este es un sub-query, filtrar segun los datos de la condicion de join ("on")
+        if ($joinData) {
+            $table->match($joinData->keyName, $joinData->keyValue);
+
+            $table->attribute($joinData->keyName);
+            $properties[] = $joinData->keyName;
+        }
+
 
         // Fetch all records and populate relation condition data
         foreach ($table->fetch() as $record) {

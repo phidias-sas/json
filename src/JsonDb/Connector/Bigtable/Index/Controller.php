@@ -1,8 +1,8 @@
 <?php
 
-namespace Phidias\JsonDb\Orm\Index;
+namespace Phidias\JsonDb\Connector\Bigtable\Index;
 
-use Phidias\JsonDb\Orm\Index\Entity as Index;
+use Phidias\JsonDb\Connector\Bigtable\Index\Entity as Index;
 
 class Controller
 {

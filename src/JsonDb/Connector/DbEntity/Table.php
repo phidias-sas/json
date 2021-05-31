@@ -1,8 +1,8 @@
 <?php
 
-namespace Phidias\JsonDb\Connector;
+namespace Phidias\JsonDb\Connector\DbEntity;
 
-class DbEntityTable implements \Phidias\JsonDb\Database\TableInterface
+class Table extends \Phidias\JsonDb\Table
 {
     private $entityName;
     private $collection;
@@ -53,6 +53,12 @@ class DbEntityTable implements \Phidias\JsonDb\Database\TableInterface
 
     public function where($condition)
     {
+        $vm = new \Phidias\JsonVm\Vm();
+        $vm->addPlugin(new \Phidias\JsonVm\Plugins\Sql);
+
+        $parsedCondition = $vm->eval($condition);
+        $this->collection->where($parsedCondition);
+
         return $this;
     }
 

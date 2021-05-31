@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\JsonDb\Orm\Index;
+namespace Phidias\JsonDb\Connector\Bigtable\Index;
 
 class Entity extends \Phidias\Db\Orm\Entity
 {
@@ -16,7 +16,7 @@ class Entity extends \Phidias\Db\Orm\Entity
             ],
 
             "recordId" => [
-                "entity" => "Phidias\\JsonDb\\Orm\\Record\\Entity",
+                "entity" => "Phidias\JsonDb\Connector\Bigtable\Record\Entity",
                 "onDelete" => "CASCADE",
                 "onUpdate" => "CASCADE",
                 "acceptNull" => false,

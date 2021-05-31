@@ -1,8 +1,8 @@
 <?php
 
-namespace Phidias\JsonDb\Orm;
+namespace Phidias\JsonDb\Connector\Bigtable;
 
-use Phidias\Core\Data\Utils as DataUtils; // damn
+use Phidias\JsonVm\Utils as JsonUtils;
 
 use Phidias\JsonDb\Orm\Record\Entity as Record;
 use Phidias\JsonDb\Orm\Index\Controller as Indexes;
@@ -99,7 +99,7 @@ class Controller
 
         if (is_array($indexableProperties)) {
             foreach ($indexableProperties as $propertyName) {
-                $propertyValue = DataUtils::getProperty($record->data, $propertyName);
+                $propertyValue = JsonUtils::getProperty($record->data, $propertyName);
                 if ($propertyValue) {
                     Indexes::put($tableId, $record->id, $propertyName, $propertyValue);
                 }
@@ -140,7 +140,7 @@ class Controller
         if (isset($query->index)) {
             $indexableProperties = is_array($query->index) ? $query->index : [$query->index];
             foreach ($indexableProperties as $propertyName) {
-                $propertyValue = DataUtils::getProperty($record->data, $propertyName);
+                $propertyValue = JsonUtils::getProperty($record->data, $propertyName);
                 Indexes::put($tableId, $record->id, $propertyName, $propertyValue);
             }
         }
@@ -182,17 +182,17 @@ class Controller
     {
         $words = [];
 
-        $words[] = DataUtils::getProperty($objData, "card.text");
-        $words[] = DataUtils::getProperty($objData, "card.secondary");
+        $words[] = JsonUtils::getProperty($objData, "card.text");
+        $words[] = JsonUtils::getProperty($objData, "card.secondary");
 
-        $redacciones = DataUtils::getProperty($objData, "redacciones");
+        $redacciones = JsonUtils::getProperty($objData, "redacciones");
         if (is_array($redacciones)) {
             foreach ($redacciones as $redaccion) {
                 $words[] = trim($redaccion->texto);
             }
         }
 
-        $blocks = DataUtils::getProperty($objData, "body.blocks");
+        $blocks = JsonUtils::getProperty($objData, "body.blocks");
         if (is_array($blocks)) {
             foreach ($blocks as $block) {
                 if ($block->component == "CmsMediaHtml" && isset($block->props->value)) {

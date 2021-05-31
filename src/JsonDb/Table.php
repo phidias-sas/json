@@ -1,12 +1,8 @@
 <?php
 
-namespace Phidias\JsonDb\Database;
+namespace Phidias\JsonDb;
 
-use Phidias\JsonDb\Orm\Controller as Orm;
-use Phidias\JsonDb\Orm\Record\Entity as Record;
-use Phidias\JsonDb\Orm\Index\Controller as Indexes;
-
-class Table implements TableInterface
+class Table
 {
     private $tableName;
     private $attributes;

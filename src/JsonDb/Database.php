@@ -4,12 +4,8 @@ namespace Phidias\JsonDb;
 
 use Phidias\JsonDb\Database\Table;
 
-class Database implements DatabaseInterface
+class Database
 {
-    public function __construct($settings = null)
-    {
-    }
-
     public function getTable($tableName, $indexableProperties = null)
     {
         return new Table($tableName, $indexableProperties);

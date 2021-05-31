@@ -84,7 +84,11 @@ class Sql extends \Phidias\JsonVm\Plugin
         $fieldName = $expr->field;
         $args = isset($expr->args) ? $expr->args : null;
 
-        return $callable($fieldName, $vm->eval($args), $vm);
+        if ($args && !is_numeric($args)) {
+            $args = "'" . str_replace("'", "\'", $args) . "'";
+        }
+
+        return $callable($fieldName, $args, $vm);
     }
 
     public static function op_eq($fieldName, $args)
@@ -119,7 +123,7 @@ class Sql extends \Phidias\JsonVm\Plugin
 
     public static function op_like($fieldName, $args)
     {
-        return "$fieldName LIKE '$args'";
+        return "$fieldName LIKE $args";
     }
 
     public static function op_in($fieldName, $args, $vm)
