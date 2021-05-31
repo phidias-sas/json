@@ -18,23 +18,31 @@ class Vm
         $pluginObj::install($this);
     }
 
-    public function defineStatement($statementChecker, callable $statementCallable)
+    public function defineStatement($statementChecker, callable $statementCallable, $statementName = null)
     {
         if (is_string($statementChecker)) {
             $propName = $statementChecker;
             $statementChecker = function ($expr) use ($propName) {
                 return property_exists($expr, $propName);
             };
+
+            $statementName = $propName;
         }
 
         if (!is_callable($statementChecker)) {
             throw new \Exception("defineStatement checker argument must be a callable");
         }
 
-        $this->statements[] = (object)[
+        $statement = (object)[
             "checker" => $statementChecker,
             "callable" => $statementCallable
         ];
+
+        if ($statementName) {
+            $this->statements[$statementName] = $statement;
+        } else {
+            $this->statements[] = $statement;
+        }
 
         return $this;
     }

@@ -84,8 +84,8 @@ class Sql extends \Phidias\JsonVm\Plugin
         $fieldName = $expr->field;
         $args = isset($expr->args) ? $expr->args : null;
 
-        if ($args && !is_numeric($args)) {
-            $args = "'" . str_replace("'", "\'", $args) . "'";
+        if ($args && is_string($args) && !is_numeric($args)) {
+            $args = self::escape($args);
         }
 
         return $callable($fieldName, $args, $vm);
@@ -134,9 +134,43 @@ class Sql extends \Phidias\JsonVm\Plugin
 
         $items = [];
         foreach ($args as $arg) {
-            $items[] = $vm->eval($arg);
+            $items[] = self::escape($arg);
         }
 
         return "$fieldName IN (" . implode(", ", $items) . ")";
+    }
+
+    public static function escape($string)
+    {
+        /**
+         * Returns a string with backslashes before characters that need to be escaped.
+         * As required by MySQL and suitable for multi-byte character sets
+         * Characters encoded are NUL (ASCII 0), \n, \r, \, ', ", and ctrl-Z.
+         *
+         * @param string $string String to add slashes to
+         * @return $string with `\` prepended to reserved characters
+         *
+         * @author Trevor Herselman
+         */
+        // if (function_exists('mb_ereg_replace')) {
+        //     function mb_escape(string $string)
+        //     {
+        //         return mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]', '\\\0', $string);
+        //     }
+        // } else {
+        //     function mb_escape(string $string)
+        //     {
+        //         return preg_replace('~[\x00\x0A\x0D\x1A\x22\x27\x5C]~u', '\\\$0', $string);
+        //     }
+        // }
+
+        $escaped = '';
+        if (function_exists('mb_ereg_replace')) {
+            $escaped = mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]', '\\\0', $string);
+        } else {
+            $escaped = preg_replace('~[\x00\x0A\x0D\x1A\x22\x27\x5C]~u', '\\\$0', $string);
+        }
+
+        return "'$escaped'";
     }
 }
