@@ -2,8 +2,6 @@
 
 namespace Phidias\JsonDb;
 
-use Phidias\JsonDb\Database\Table;
-
 class Database
 {
     public function getTable($tableName, $indexableProperties = null)

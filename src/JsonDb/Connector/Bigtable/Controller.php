@@ -4,8 +4,8 @@ namespace Phidias\JsonDb\Connector\Bigtable;
 
 use Phidias\JsonVm\Utils as JsonUtils;
 
-use Phidias\JsonDb\Orm\Record\Entity as Record;
-use Phidias\JsonDb\Orm\Index\Controller as Indexes;
+use Phidias\JsonDb\Connector\Bigtable\Record\Entity as Record;
+use Phidias\JsonDb\Connector\Bigtable\Index\Controller as Indexes;
 
 class Controller
 {
