@@ -16,7 +16,7 @@ class Entity extends \Phidias\Db\Orm\Entity
             ],
 
             "recordId" => [
-                "entity" => "Phidias\\Db\\JsonDb\\Orm\\Record\\Entity",
+                "entity" => "Phidias\\JsonDb\\Orm\\Record\\Entity",
                 "onDelete" => "CASCADE",
                 "onUpdate" => "CASCADE",
                 "acceptNull" => false,
