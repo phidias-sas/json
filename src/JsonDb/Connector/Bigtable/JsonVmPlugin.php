@@ -6,14 +6,11 @@ class JsonVmPlugin extends \Phidias\JsonVm\Plugin
 {
     public static function install($vm)
     {
-        // \Phidias\JsonVm\Plugins\Sql::install($vm);
-        $vm->defineStatement('and', ['\Phidias\JsonVm\Plugins\Sql', 'stmtAnd']);
-        $vm->defineStatement('or', ['\Phidias\JsonVm\Plugins\Sql', 'stmtOr']);
-        $vm->defineStatement('not', ['\Phidias\JsonVm\Plugins\Sql', 'stmtNot']);
+        \Phidias\JsonVm\Plugins\Sql::install($vm);
 
         $vm->defineStatement('op', [self::class, 'stmtOp']);
 
-        $vm->defineStatement('deudor', [self::class, 'deudor']);
+        $vm->defineStatement('deudor', [self::class, 'test_deudor']);
     }
 
     /*
@@ -42,17 +39,16 @@ class JsonVmPlugin extends \Phidias\JsonVm\Plugin
             $fieldName = "JSON_EXTRACT(data, '$.$fieldName')";
         }
 
-
         $args = isset($expr->args) ? $expr->args : null;
-        if ($args && !is_numeric($args)) {
-            $args = "'" . str_replace("'", "\'", $args) . "'";
+        if ($args && is_string($args) && !is_numeric($args)) {
+            $args = \Phidias\JsonVm\Plugins\Sql::escape($args);
         }
 
         $opResult = $callable($fieldName, $args, $vm);
         return $opResult;
     }
 
-    public static function deudor($expr, $vm)
+    public static function test_deudor($expr, $vm)
     {
         $deudaSettings = $expr->deudor;
 
