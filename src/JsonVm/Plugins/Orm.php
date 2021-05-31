@@ -2,58 +2,25 @@
 
 namespace Phidias\JsonVm\Plugins;
 
-class Orm extends \Phidias\JsonVm\Plugin
+class Orm extends \Phidias\JsonVm\Plugins\Sql
 {
     public static function install($vm)
     {
-        $vm->defineFunction('db.entity', [self::class, 'fetchEntity']);
-        $vm->defineFunction('orm.query.select', [self::class, 'querySelect']);
+        \Phidias\JsonVm\Plugins\Sql::install($vm);
+
+        $vm->defineStatement('deudor', [self::class, 'deudor']);
     }
 
-    public static function fetchEntity($args)
+    public static function deudor($expr, $vm)
     {
-        $table = isset($args->from) ? $args->from : null;
+        $deudaSettings = $expr->deudor;
 
-        if (!$table) {
-            throw new \Exception("no table specified");
+        $field = 'person';
+        if (isset($deudaSettings->field) && $deudaSettings->field == "responsible") {
+            $field = $deudaSettings->field;
         }
 
-        if (!is_a($table, '\Phidias\Db\Orm\Entity', true)) {
-            throw new \Exception("invalid entity");
-        }
-
-        $objEntity = new $table;
-
-        $collection = $objEntity::collection()
-            ->attributes(array_keys(get_object_vars($args->properties)))
-            ->match($args->match)
-            ->limit(1);
-
-        return $collection->find()->first();
-        // return $collection->getQuery()->toSQL();
-    }
-
-    public static function querySelect($args)
-    {
-        $table = isset($args->from) ? $args->from : null;
-
-        if (!$table) {
-            throw new \Exception("no table specified");
-        }
-
-        $query = new \stdClass;
-        if (isset($args->match)) {
-            $query->match = $args->match;
-        }
-
-        if (isset($args->limit)) {
-            $query->limit = $args->limit;
-        } else {
-            $query->limit = 100;
-        }
-
-        $collection = \Phidias\V3\Orm\Table\Controller::getRecords($table, $query);
-        return $collection->find()->fetchAll();
-        // return $collection->getQuery()->toSQL();
+        $minValue = isset($deudaSettings->debt) ? $deudaSettings->debt : 1000000;
+        return "id IN (SELECT $field FROM sophia_debits WHERE balance > 0 AND accounting_date > 0 AND invalidation_date IS NULL GROUP BY person HAVING SUM(balance) > $minValue)";
     }
 }

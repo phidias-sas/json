@@ -36,8 +36,7 @@ class Entity extends \Phidias\Db\Orm\Entity
         ],
 
         // "indexes" => [
-        //     "tableId" => "tableId",
-        //     "recordId" => "recordId",
+        //     "tableId" => "tableId"
         // ]
     ];
 }
