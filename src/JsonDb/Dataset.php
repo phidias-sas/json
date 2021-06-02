@@ -93,11 +93,6 @@ class Dataset
         }
         $table->limit($limit);
 
-        // Forzar limit 1  cuando es un anidado "single"
-        if ($query->isSingle) {
-            $table->limit(1);
-        }
-
         // Si este es un sub-query, filtrar segun los datos de la condicion de join ("on")
         if ($joinData) {
             $table->match($joinData->keyName, $joinData->keyValue);
