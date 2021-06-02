@@ -51,6 +51,12 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
+    public function order($order)
+    {
+        $this->collection->order($order);
+        return $this;
+    }
+
     public function where($condition)
     {
         $vm = new \Phidias\JsonVm\Vm();

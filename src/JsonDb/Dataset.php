@@ -93,6 +93,11 @@ class Dataset
         }
         $table->limit($limit);
 
+        // Orden
+        if (isset($query->order)) {
+            $table->order($query->order);
+        }
+
         // Si este es un sub-query, filtrar segun los datos de la condicion de join ("on")
         if ($joinData) {
             $table->match($joinData->keyName, $joinData->keyValue);

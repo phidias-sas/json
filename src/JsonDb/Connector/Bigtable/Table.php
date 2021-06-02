@@ -81,6 +81,12 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
+    public function order($order)
+    {
+        $this->collection->order($order);
+        return $this;
+    }
+
     public function fetch()
     {
         $retval = [];

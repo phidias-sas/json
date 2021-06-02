@@ -29,6 +29,11 @@ class Table
         return $this;
     }
 
+    public function order($order)
+    {
+        return $this;
+    }
+
     public function fetch()
     {
         return [];
