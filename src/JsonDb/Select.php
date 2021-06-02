@@ -39,9 +39,13 @@ class Select
             $retval->on($localProperty, $parentProperty);
         }
 
-        if (@!is_array($incoming->properties)) {
+        if (!isset($incoming->properties)) {
             $incoming->properties = [];
         }
+        if (is_string($incoming->properties)) {
+            $incoming->properties = [$incoming->properties];
+        }
+
         foreach ($incoming->properties as $incomingProperty) {
             if (is_object($incomingProperty)) {
                 $propertyName = array_keys(get_object_vars($incomingProperty))[0];
@@ -53,9 +57,9 @@ class Select
         }
 
         if (@is_object($incoming->match)) {
-            $propertyName = array_keys(get_object_vars($incoming->match))[0];
-            $targetValue = $incoming->match->$propertyName;
-            $retval->match($propertyName, $targetValue);
+            foreach ($incoming->match as $propertyName => $targetValue) {
+                $retval->match($propertyName, $targetValue);
+            }
         }
 
         if (isset($incoming->where)) {
