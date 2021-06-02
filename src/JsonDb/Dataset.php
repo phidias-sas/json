@@ -27,48 +27,23 @@ class Dataset
 
     public function query($query, $joinData = null)
     {
-        // Convertir arreglos de PHP a objetos
-        $query = json_decode(json_encode($query));
-
         $retval = [];
 
-        /*
-        Determinar fuentes de datos (nombre de db y nombre de tabla):
-        "from": "tableName",   // se asume dbName = default
-        o:
-        "from": {"dbName": "tableName"}
-        */
-        if (!isset($query->from)) {
-            throw new \Exception("No source specified");
+        $query = Select::factory($query);
+
+        if (!isset($this->databases[$query->from->db])) {
+            throw new \Exception("Database '{$query->from->db}' not found in dataset");
         }
 
-        if (is_string($query->from)) {
-            $dbName = "default";
-            $tableName = trim($query->from);
-        } else if (is_object($query->from)) {
-            $dbName = array_keys(get_object_vars($query->from))[0];
-            $tableName = trim($query->from->$dbName);
-        }
-
-        if (!isset($this->databases[$dbName])) {
-            throw new \Exception("Database '$dbName' not found in dataset");
-        }
-
-        if (!$tableName) {
-            throw new \Exception("No table specified");
-        }
-
-        $db = $this->databases[$dbName];
-        $table = $db->getTable($tableName);
+        $db = $this->databases[$query->from->db];
+        $table = $db->getTable($query->from->table);
 
         // Establecer propiedades a seleccionar e identificar relaciones
-        $incomingProperties = isset($query->properties) && is_array($query->properties) ? $query->properties : ['*'];
-
         $useAllProperties = false;
         $properties = [];
         $relations = [];
 
-        foreach ($incomingProperties as $property) {
+        foreach ($query->properties as $property) {
             if (is_object($property)) {
                 $propName = array_keys(get_object_vars($property))[0];
                 $propSource = $property->$propName;
@@ -102,14 +77,12 @@ class Dataset
         }
 
         // Establecer condiciones de "match"
-        if (isset($query->match)) {
-            foreach ($query->match as $keyName => $keyValue) {
-                $table->match($keyName, $keyValue);
-            }
+        foreach ($query->match as $keyName => $keyValue) {
+            $table->match($keyName, $keyValue);
         }
 
         // Establecer condicionales ("where")
-        if (isset($query->where)) {
+        if ($query->where) {
             $table->where($query->where);
         }
 
@@ -120,6 +93,10 @@ class Dataset
         }
         $table->limit($limit);
 
+        // Forzar limit 1  cuando es un anidado "single"
+        if ($query->isSingle) {
+            $table->limit(1);
+        }
 
         // Si este es un sub-query, filtrar segun los datos de la condicion de join ("on")
         if ($joinData) {
@@ -129,14 +106,13 @@ class Dataset
             $properties[] = $joinData->keyName;
         }
 
-
         // Fetch all records and populate relation condition data
         foreach ($table->fetch() as $record) {
             if ($useAllProperties) {
                 $retvalItem = $record;
             } else {
                 $retvalItem = new \stdClass;
-                $retvalItem->id = isset($record->id) ? $record->id : null;
+                $retvalItem->id = isset($record->id) ? $record->id : null; // plop id always
 
                 foreach ($properties as $propName) {
                     $retvalItem->$propName = isset($record->$propName) ? $record->$propName : null;
@@ -148,7 +124,8 @@ class Dataset
                 $hashValue = $record->$localPropName;
                 $relationData->hash[$hashValue][] = $retvalItem;
 
-                $retvalItem->{$relationData->propName} = [];
+                // Inicializar la propiedad relacionada en blanco
+                $retvalItem->{$relationData->propName} = $relationData->query->isSingle ? null : [];
             }
 
             $retval[] = $retvalItem;
@@ -179,11 +156,14 @@ class Dataset
 
                 $parentRecords = $relationData->hash[$keyValue];
                 foreach ($parentRecords as $parentRecord) {
-                    if (!isset($parentRecord->{$relationData->propName}) || !is_array($parentRecord->{$relationData->propName})) {
-                        $parentRecord->{$relationData->propName} = [];
+                    if ($relationData->query->isSingle) {
+                        $parentRecord->{$relationData->propName} = $relRecord;
+                    } else {
+                        if (!isset($parentRecord->{$relationData->propName}) || !is_array($parentRecord->{$relationData->propName})) {
+                            $parentRecord->{$relationData->propName} = [];
+                        }
+                        $parentRecord->{$relationData->propName}[] = $relRecord;
                     }
-
-                    $parentRecord->{$relationData->propName}[] = $relRecord;
                 }
             }
         }
