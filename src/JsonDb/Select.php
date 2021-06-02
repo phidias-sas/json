@@ -114,9 +114,10 @@ class Select
         return $this;
     }
 
-    public function properties(...$arguments)
+    // public function properties(...$arguments)
+    public function properties()
     {
-        // $arguments = func_get_args();
+        $arguments = func_get_args(); // en vez de ...$arguments para soportar php 5.3 (!!!)
         foreach ($arguments as $prop) {
             if (is_object($prop)) {
                 $propertyName = array_keys(get_object_vars($prop))[0];
