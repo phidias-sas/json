@@ -26,7 +26,7 @@ class Sql extends \Phidias\JsonVm\Plugin
 
         $conditions = [];
         for ($i = 0; $i < count($statements); $i++) {
-            $conditions[] = "(" . $vm->eval($statements[$i]) . ")";
+            $conditions[] = "(" . $vm->evaluate($statements[$i]) . ")";
         }
 
         return "(" . implode(" AND ", $conditions) . ")";
@@ -46,7 +46,7 @@ class Sql extends \Phidias\JsonVm\Plugin
 
         $conditions = [];
         for ($i = 0; $i < count($statements); $i++) {
-            $conditions[] = "(" . $vm->eval($statements[$i]) . ")";
+            $conditions[] = "(" . $vm->evaluate($statements[$i]) . ")";
         }
 
         return "(" . implode(" OR ", $conditions) . ")";
@@ -59,7 +59,7 @@ class Sql extends \Phidias\JsonVm\Plugin
     */
     public static function stmtNot($expr, $vm)
     {
-        return "( NOT " . $vm->eval($expr->not) . ")";
+        return "( NOT " . $vm->evaluate($expr->not) . ")";
     }
 
     /*

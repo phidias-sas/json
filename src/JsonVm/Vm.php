@@ -47,7 +47,7 @@ class Vm
         return $this;
     }
 
-    public function eval($expr, $model = null)
+    public function evaluate($expr, $model = null)
     {
         if (!$expr || (!is_string($expr) && !is_object($expr))) {
             return $expr;
@@ -64,7 +64,7 @@ class Vm
         if (is_array($expr)) {
             $retval = [];
             for ($i = 0; $i < count($expr); $i++) {
-                $retval[$i] = $this->eval($expr[$i]);
+                $retval[$i] = $this->evaluate($expr[$i]);
             }
 
             return $retval;
@@ -90,7 +90,7 @@ class Vm
 
         $retval = new \stdClass;
         foreach (get_object_vars($obj) as $propertyName => $propertyValue) {
-            $retval->$propertyName = $this->eval($propertyValue);
+            $retval->$propertyName = $this->evaluate($propertyValue);
         }
         return $retval;
     }

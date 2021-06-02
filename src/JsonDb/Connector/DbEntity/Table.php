@@ -56,7 +56,7 @@ class Table extends \Phidias\JsonDb\Table
         $vm = new \Phidias\JsonVm\Vm();
         $vm->addPlugin(new \Phidias\JsonVm\Plugins\Sql);
 
-        $parsedCondition = $vm->eval($condition);
+        $parsedCondition = $vm->evaluate($condition);
         $this->collection->where($parsedCondition);
 
         return $this;

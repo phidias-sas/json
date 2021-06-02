@@ -26,10 +26,10 @@ class Php extends \Phidias\JsonVm\Plugin
         $then = isset($obj->then) ? $obj->then : null;
         $else = isset($obj->else) ? $obj->else : null;
 
-        if ($vm->eval($if)) {
-            return $vm->eval($then);
+        if ($vm->evaluate($if)) {
+            return $vm->evaluate($then);
         } else {
-            return $vm->eval($else);
+            return $vm->evaluate($else);
         }
     }
 
@@ -47,7 +47,7 @@ class Php extends \Phidias\JsonVm\Plugin
 
         $res = false;
         for ($i = 0; $i < count($statements); $i++) {
-            $res = $vm->eval($statements[$i]);
+            $res = $vm->evaluate($statements[$i]);
             if (!$res) {
                 return false;
             }
@@ -69,7 +69,7 @@ class Php extends \Phidias\JsonVm\Plugin
         }
 
         for ($i = 0; $i < count($statements); $i++) {
-            $res = $vm->eval($statements[$i]);
+            $res = $vm->evaluate($statements[$i]);
             if ($res) {
                 return $res;
             }
@@ -101,14 +101,14 @@ class Php extends \Phidias\JsonVm\Plugin
         $cases = isset($expr->case) && is_array($expr->case) ? $expr->case : [];
         $default = isset($expr->default) ? $expr->default : null;
 
-        $value = $vm->eval($switch);
+        $value = $vm->evaluate($switch);
         for ($i = 0; $i < count($cases); $i++) {
             if (isset($cases[$i]->value) && $cases[$i]->value == $value) {
-                return $vm->eval($cases[$i]->do);
+                return $vm->evaluate($cases[$i]->do);
             }
         }
 
-        return $vm->eval($default);
+        return $vm->evaluate($default);
     }
 
     /*
@@ -129,7 +129,7 @@ class Php extends \Phidias\JsonVm\Plugin
             throw new \Exception("Undefined operator '$operatorName'");
         }
 
-        return $callable($fieldValue, $vm->eval($args), $vm);
+        return $callable($fieldValue, $vm->evaluate($args), $vm);
     }
 
 
