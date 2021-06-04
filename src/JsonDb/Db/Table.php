@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\JsonDb\Connector\DbEntity;
+namespace Phidias\JsonDb\Db;
 
 class Table extends \Phidias\JsonDb\Table
 {
@@ -57,8 +57,25 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
+    public function having($having)
+    {
+        $this->collection->having($having);
+        return $this;
+    }
+
+    public function groupBy($groupBy)
+    {
+        $this->collection->groupBy($groupBy);
+        return $this;
+    }
+
     public function where($condition)
     {
+        if (is_string($condition)) {
+            $this->collection->where($condition);
+            return $this;
+        }
+
         $vm = new \Phidias\JsonVm\Vm();
         $vm->addPlugin(new \Phidias\JsonVm\Plugins\Sql);
 
@@ -82,5 +99,11 @@ class Table extends \Phidias\JsonDb\Table
         }
 
         return $retval;
+    }
+
+    public function sql($query, $params = null)
+    {
+        $this->collection->query($query, $params);
+        return $this;
     }
 }

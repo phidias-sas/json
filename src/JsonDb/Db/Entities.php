@@ -1,8 +1,8 @@
 <?php
 
-namespace Phidias\JsonDb\Connector\DbEntity;
+namespace Phidias\JsonDb\Db;
 
-class Database extends \Phidias\JsonDb\Database
+class Entities extends \Phidias\JsonDb\Source
 {
     public function getTable($tableName, $indexableProperties = null)
     {

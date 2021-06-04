@@ -4,38 +4,39 @@ namespace Phidias\JsonDb;
 
 class Dataset
 {
-    private $databases;
+    private $sources;
     private $maxLimit;
 
     public function __construct()
     {
-        $this->databases = [];
+        $this->sources = [];
         $this->maxLimit = 5000;
     }
 
-    public function addDatabase($dbName, $dbObject, $isDefault = false)
+    public function addSource($dbName, $dbObject, $isDefault = false)
     {
-        if (!is_a($dbObject, 'Phidias\JsonDb\Database')) {
-            throw new \Exception("Database must be of type Phidias\JsonDb\Database");
+        if (!is_a($dbObject, 'Phidias\JsonDb\Source')) {
+            throw new \Exception("Source must be of type Phidias\JsonDb\Source");
         }
 
-        $this->databases[$dbName] = $dbObject;
+        $this->sources[$dbName] = $dbObject;
         if ($isDefault) {
-            $this->databases['default'] = $this->databases[$dbName];
+            $this->sources['default'] = $this->sources[$dbName];
         }
+
+        return $this;
     }
 
     public function query($query, $joinData = null)
     {
         $retval = [];
-
         $query = Select::factory($query);
 
-        if (!isset($this->databases[$query->from->db])) {
-            throw new \Exception("Database '{$query->from->db}' not found in dataset");
+        if (!isset($this->sources[$query->from->db])) {
+            throw new \Exception("Source '{$query->from->db}' not found in dataset");
         }
 
-        $db = $this->databases[$query->from->db];
+        $db = $this->sources[$query->from->db];
         $table = $db->getTable($query->from->table);
 
         // Establecer propiedades a seleccionar e identificar relaciones
@@ -76,6 +77,11 @@ class Dataset
             }
         }
 
+        // Raw SQL
+        if ($query->sql) {
+            $table->sql($query->sql->query, $query->sql->params);
+        }
+
         // Establecer condiciones de "match"
         foreach ($query->match as $keyName => $keyValue) {
             $table->match($keyName, $keyValue);
@@ -84,6 +90,16 @@ class Dataset
         // Establecer condicionales ("where")
         if ($query->where) {
             $table->where($query->where);
+        }
+
+        // Establecer condicionales ("where")
+        if ($query->having) {
+            $table->having($query->having);
+        }
+
+        // Establecer condicionales ("where")
+        if ($query->groupBy) {
+            $table->groupBy($query->groupBy);
         }
 
         // Limite
@@ -120,12 +136,22 @@ class Dataset
             }
 
             foreach ($relations as $relationData) {
-                $localPropName = $relationData->local;
-                $hashValue = $record->$localPropName;
-                $relationData->hash[$hashValue][] = $retvalItem;
-
                 // Inicializar la propiedad relacionada en blanco
                 $retvalItem->{$relationData->propName} = $relationData->query->isSingle ? null : [];
+
+                $localPropName = $relationData->local;
+                if (!isset($record->$localPropName)) {
+                    continue;
+                }
+
+                $localValues = is_array($record->$localPropName) ? $record->$localPropName : [$record->$localPropName];
+                foreach ($localValues as $hashValue) {
+                    if (!is_scalar($hashValue)) {
+                        continue;
+                    }
+
+                    $relationData->hash[$hashValue][] = $retvalItem;
+                }
             }
 
             $retval[] = $retvalItem;
@@ -150,6 +176,12 @@ class Dataset
                 }
 
                 $keyValue = $relRecord->{$relationData->foreign};
+
+                if (!is_scalar($keyValue)) {
+                    // dumpx("hoh", $keyValue);
+                    continue;
+                }
+
                 if (!isset($relationData->hash[$keyValue])) {
                     continue;
                 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\JsonDb\Connector\Bigtable;
+namespace Phidias\JsonDb\Bigtable;
 
 class JsonVmPlugin extends \Phidias\JsonVm\Plugin
 {

@@ -2,7 +2,7 @@
 
 namespace Phidias\JsonDb;
 
-class Database
+class Source
 {
     public function getTable($tableName, $indexableProperties = null)
     {

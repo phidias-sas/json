@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\JsonDb\Connector\Bigtable\Record;
+namespace Phidias\JsonDb\Bigtable\Record;
 
 class Entity extends \Phidias\Db\Orm\Entity
 {

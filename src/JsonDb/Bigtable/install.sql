@@ -1,3 +1,5 @@
+--- CAMBIAR EL PREFIJO "phidias_jsondb" a lo que se necesite
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;

@@ -9,6 +9,17 @@ class Table
         return null;
     }
 
+    public function update($recordId, $data)
+    {
+        return null;
+    }
+
+    public function delete($recordId)
+    {
+        return null;
+    }
+
+
     public function where($condition)
     {
         return $this;
@@ -34,8 +45,24 @@ class Table
         return $this;
     }
 
+    public function having($having)
+    {
+        return $this;
+    }
+
+    public function groupBy($groupBy)
+    {
+        return $this;
+    }
+
     public function fetch()
     {
         return [];
+    }
+
+
+    public function sql($query, $params = null)
+    {
+        return $this;
     }
 }
