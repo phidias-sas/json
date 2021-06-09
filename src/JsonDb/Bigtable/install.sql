@@ -15,6 +15,7 @@ CREATE TABLE `phidias_jsondb_indexes` (
 CREATE TABLE `phidias_jsondb_records` (
   `id` varchar(32) NOT NULL,
   `tableId` varchar(32) NOT NULL,
+  `customId` varchar(32) NOT NULL,
   `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`data`)),
   `keywords` mediumtext DEFAULT NULL,
   `authorId` varchar(32) DEFAULT NULL,

@@ -21,6 +21,12 @@ class Entity extends \Phidias\Db\Orm\Entity
                 "acceptNull" => false,
             ],
 
+            "customId" => [
+                "type" => "varchar",
+                "length" => 32,
+                "acceptNull" => false,
+            ],
+
             "data" => [
                 "type" => "json",
                 "acceptNull" => true,
@@ -63,6 +69,7 @@ class Entity extends \Phidias\Db\Orm\Entity
 
         "indexes" => [
             "tableId" => "tableId",
+            "customId" => "customId",
             "authorId" => "authorId",
 
             // "keywords" => "keywords", // Debe ser un indice FULLTEXT

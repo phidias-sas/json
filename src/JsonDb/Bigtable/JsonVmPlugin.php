@@ -30,7 +30,9 @@ class JsonVmPlugin extends \Phidias\JsonVm\Plugin
         }
 
         $fieldName = $expr->field;
-        if (substr($fieldName, 0, 7) == "record.") {
+        if ($fieldName == "id") {
+            $fieldName = "customId";
+        } else if (substr($fieldName, 0, 7) == "record.") {
             $fieldName = substr($fieldName, 7);
         } else {
             $fieldName = "JSON_EXTRACT(data, '$.$fieldName')";

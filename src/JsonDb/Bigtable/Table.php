@@ -58,32 +58,172 @@ class Table extends \Phidias\JsonDb\Table
 
     public function getRecord($recordId)
     {
-        return $this->getRecordCollection()->allAttributes()->fetch($recordId);
+        return $this->getRecordCollection()
+            ->allAttributes()
+            ->match("customId", $recordId)
+            ->fetch();
     }
 
-    public function insert($data, $authorId = null)
+    public function insert($incomingData, $authorId = null)
     {
-        $record = new \stdClass;
-        $record->tableId = $this->tableName;
-        $record->data = $data;
-        $record->dateCreated = time();
-        $record->authorId = $authorId;
-        // $record->keywords = "";
+        $retval = [];
+        $targetRecords = is_array($incomingData) ? $incomingData : [$incomingData];
 
-        $this->getRecordCollection()
-            ->allAttributes()
-            ->save($record);
+        $records = $this->getRecordCollection()->allAttributes();
+        $db = $records->getDb();
+        $db->query("SET autocommit = 0");
+        $db->query("START TRANSACTION");
 
-        // Crear indices
-        if (is_array($this->indexableProperties)) {
-            $indexValues = [];
-            foreach ($this->indexableProperties as $propName) {
-                $indexValues[$propName] = JsonUtils::getProperty($record->data, $propName);
+        foreach ($targetRecords as $data) {
+            $record = new \stdClass;
+            $record->id = $records->getUniqueId();
+
+            $data->id = isset($data->id) ? $data->id : $record->id;
+
+            $record->customId = $data->id;
+            $record->tableId = $this->tableName;
+            $record->data = $data;
+            $record->dateCreated = time();
+            $record->authorId = $authorId;
+            $record->keywords = "";
+            $record->dateModified = null;
+            $record->dateDeleted = null;
+
+            $records->insert($record); // Esto modifica $record->data con el valor insertado tal cual (es decir, lo deja como STRING)
+
+            $record->data = json_decode($record->data);
+            $retval[] = $record;
+
+            // Crear indices
+            if (is_array($this->indexableProperties)) {
+                $indexValues = [];
+                foreach ($this->indexableProperties as $propName) {
+                    $indexValues[$propName] = JsonUtils::getProperty($data, $propName);
+                }
+                $this->putIndexes($record->id, $indexValues);
             }
-            $this->putIndexes($record->id, $indexValues);
         }
 
-        return $record;
+        $db->query("COMMIT");
+
+        return $retval;
+    }
+
+    public function insertUpdate($incomingData, $authorId = null)
+    {
+        $retval = [];
+        $incomingRecords = is_array($incomingData) ? $incomingData : [$incomingData];
+
+        $existingRecords = [];
+        $recordIds = [];
+        foreach ($incomingRecords as $record) {
+            if (isset($record->id)) {
+                $recordIds[] = $record->id;
+            }
+        }
+        if (count($recordIds)) {
+            $probe = $this->getRecordCollection()
+                ->allAttributes()
+                ->match("customId", $recordIds)
+                ->find();
+            foreach ($probe as $record) {
+                $existingRecords[$record->customId] = $record;
+            }
+        }
+
+        $changedRecords = [];
+        $newRecords = [];
+
+        foreach ($incomingRecords as $record) {
+            if (!isset($record->id) || !isset($existingRecords[$record->id])) {
+                $newRecords[] = $record;
+                continue;
+            }
+
+            $current = $existingRecords[$record->id];
+            $hasChanges = false;
+            foreach ($record as $propName => $incomingValue) {
+                // $diff = $current->data->$propName != $incomingValue;
+                $diff = json_encode($current->data->$propName) != json_encode($incomingValue);
+                if (!isset($current->data->$propName) || $diff) {
+                    $current->data->$propName = $incomingValue;
+                    $hasChanges = true;
+                }
+            }
+
+            if ($hasChanges) {
+                $changedRecords[] = $current;
+            } else {
+                $retval[] = $current->data; // unchanged
+            }
+        }
+
+        $records = $this->getRecordCollection()->allAttributes();
+        $db = $records->getDb();
+        $db->query("SET autocommit = 0");
+        $db->query("START TRANSACTION");
+
+        foreach ($newRecords as $data) {
+            $newRecord = new \stdClass;
+            $newRecord->id = $records->getUniqueId();
+            $data->id = isset($data->id) ? $data->id : $newRecord->id;
+            $newRecord->customId = $data->id;
+            $newRecord->tableId = $this->tableName;
+            $newRecord->data = $data;
+            $newRecord->dateCreated = time();
+            $newRecord->authorId = $authorId;
+            $newRecord->keywords = "";
+            $newRecord->dateModified = null;
+            $newRecord->dateDeleted = null;
+
+            $records->insert($newRecord); // Esto modifica $newRecord->data con el valor insertado tal cual (es decir, lo deja como STRING)
+            $newRecord->data = json_decode($newRecord->data);
+
+            $retval[] = $newRecord->data;
+
+            // Crear indices
+            if (is_array($this->indexableProperties)) {
+                $indexValues = [];
+                foreach ($this->indexableProperties as $propName) {
+                    $indexValues[$propName] = JsonUtils::getProperty($newRecord->data, $propName);
+                }
+                $this->putIndexes($newRecord->id, $indexValues);
+            }
+        }
+
+        foreach ($changedRecords as $record) {
+            $customId = isset($record->data->id) ? $record->data->id : $record->id;
+            $record->data->id = $customId;
+
+            $this->getRecordCollection()
+                ->attributes(["data", "dateModified", "authorId"]) // establecer los atributos que se pueden modificar
+                ->match("id", $record->id)
+                ->set("customId", $customId)
+                ->set("data", json_encode($record->data))
+                ->set("dateModified", time())
+                ->set("authorId", $authorId)
+                // ->set("keywords", $keywords)
+                ->update();
+
+            $retval[] = $record->data;
+
+            // Actualizar indices
+            if (is_array($this->indexableProperties)) {
+                $indexValues = [];
+                foreach ($this->indexableProperties as $propName) {
+                    $indexValues[$propName] = JsonUtils::getProperty($record->data, $propName);
+                }
+
+                if (count($indexValues)) {
+                    $this->deleteIndex($record->id);
+                    $this->putIndexes($record->id, $indexValues);
+                }
+            }
+        }
+
+        $db->query("COMMIT");
+
+        return $retval;
     }
 
     public function update($recordId, $data, $authorId = null)
@@ -114,25 +254,27 @@ class Table extends \Phidias\JsonDb\Table
                 ->match("id", $record->id)
 
                 ->set("data", json_encode($record->data))
-                // ->set("keywords", $keywords)
                 ->set("dateModified", $record->dateModified)
                 ->set("authorId", $authorId)
+                // ->set("keywords", $keywords)
 
                 ->update();
+
+
+            // Actualizar indices
+            if (is_array($this->indexableProperties)) {
+                $indexValues = [];
+                foreach ($this->indexableProperties as $propName) {
+                    $indexValues[$propName] = JsonUtils::getProperty($record->data, $propName);
+                }
+
+                if (count($indexValues)) {
+                    $this->deleteIndex($recordId);
+                    $this->putIndexes($recordId, $indexValues);
+                }
+            }
         }
 
-        // Actualizar indices
-        if (is_array($this->indexableProperties)) {
-            $indexValues = [];
-            foreach ($this->indexableProperties as $propName) {
-                $indexValues[$propName] = JsonUtils::getProperty($record->data, $propName);
-            }
-
-            if (count($indexValues)) {
-                $this->deleteIndex($recordId);
-                $this->putIndexes($recordId, $indexValues);
-            }
-        }
 
         return $record;
     }
@@ -151,7 +293,7 @@ class Table extends \Phidias\JsonDb\Table
         return $record; // fare thee well
     }
 
-    public function putIndexes($recordId, $indexValues = null)
+    private function putIndexes($recordId, $indexValues = null)
     {
         if (!$indexValues || !is_array($indexValues)) {
             return;
@@ -174,14 +316,12 @@ class Table extends \Phidias\JsonDb\Table
                 $newIndex->keyName = $keyName;
                 $newIndex->keyValue = $targetValue;
 
-                $indexCollection->add($newIndex);
+                $indexCollection->insert($newIndex);
             }
         }
-
-        return $indexCollection->save();
     }
 
-    public function deleteIndex($recordId, $keyName = null)
+    private function deleteIndex($recordId, $keyName = null)
     {
         $indexes = $this->getIndexCollection()
             ->match("tableId", $this->tableName)
@@ -215,7 +355,9 @@ class Table extends \Phidias\JsonDb\Table
 
         $this->attributes[$attributeName] = $attributeName;
 
-        if (substr($attributeName, 0, 7) == "record.") {
+        if ($attributeName == "id") {
+            $this->collection->attribute("customId");
+        } else if (substr($attributeName, 0, 7) == "record.") {
             $this->collection->attribute(substr($attributeName, 7));
         } else if ($attributeName == "*") {
             $this->useAllAttributes = true;
@@ -229,7 +371,9 @@ class Table extends \Phidias\JsonDb\Table
 
     public function match($attributeName, $attributeValue)
     {
-        if (substr($attributeName, 0, 7) == "record.") {
+        if ($attributeName == "id") {
+            $this->collection->match("customId", $attributeValue);
+        } else if (substr($attributeName, 0, 7) == "record.") {
             $this->collection->match(substr($attributeName, 7), $attributeValue);
         } else {
             $valueCondition = '';
@@ -270,12 +414,14 @@ class Table extends \Phidias\JsonDb\Table
     {
         $retval = [];
 
+        // siempre traer ID (y atributos que identifican un ON con un padre?)
+        $this->collection->attribute("customId");
+
         foreach ($this->collection->find()->fetchAll() as $record) {
             if ($this->useAllAttributes) {
                 $retvalItem = isset($record->data) && is_object($record->data) ? $record->data : new \stdClass;
             } else {
                 $retvalItem = new \stdClass;
-                $retvalItem->id = $record->id; // PLOP id (initial id)
             }
 
             foreach ($this->attributes as $attributeName) {
@@ -292,11 +438,7 @@ class Table extends \Phidias\JsonDb\Table
                 }
             }
 
-            // PLOP id
-            if (!isset($retvalItem->id)) {
-                $retvalItem->id = $record->id;
-            }
-
+            $retvalItem->id = $record->customId; // PLOP id
             $retval[] = $retvalItem;
         }
 
