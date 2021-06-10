@@ -24,7 +24,6 @@ CREATE TABLE `phidias_jsondb_records` (
   `dateDeleted` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
 ALTER TABLE `phidias_jsondb_indexes`
   ADD PRIMARY KEY (`tableId`,`recordId`,`keyName`,`keyValue`),
   ADD KEY `recordId` (`recordId`);
@@ -32,8 +31,8 @@ ALTER TABLE `phidias_jsondb_indexes`
 ALTER TABLE `phidias_jsondb_records`
   ADD PRIMARY KEY (`id`),
   ADD KEY `tableId` (`tableId`),
-  ADD KEY `authorId` (`authorId`);
-
+  ADD KEY `authorId` (`authorId`),
+  ADD FULLTEXT(`keywords`);
 
 ALTER TABLE `phidias_jsondb_indexes`
   ADD CONSTRAINT `phidias_jsondb_indexes_fk1` FOREIGN KEY (`recordId`) REFERENCES `phidias_jsondb_records` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;

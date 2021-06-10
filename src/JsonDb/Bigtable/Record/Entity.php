@@ -71,9 +71,8 @@ class Entity extends \Phidias\Db\Orm\Entity
             "tableId" => "tableId",
             "customId" => "customId",
             "authorId" => "authorId",
-
             // "keywords" => "keywords", // Debe ser un indice FULLTEXT
-            // ALTER TABLE `sophia_orm_table_records` ADD FULLTEXT(`keywords`);
+            // ALTER TABLE `phidias_jsondb_records` ADD FULLTEXT(`keywords`);
         ]
     ];
 }
