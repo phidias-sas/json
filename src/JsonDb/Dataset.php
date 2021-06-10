@@ -102,6 +102,11 @@ class Dataset
             $table->groupBy($query->groupBy);
         }
 
+        // Establecer busqueda ("search")
+        if ($query->search) {
+            $table->search($query->search);
+        }
+
         // Limite
         $limit = $this->maxLimit;
         if (isset($query->limit)) {

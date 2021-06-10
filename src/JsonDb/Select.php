@@ -6,6 +6,7 @@ class Select
 {
     public $from;
     public $on;
+    public $search;
     public $properties;
     public $match;
     public $where;
@@ -84,6 +85,10 @@ class Select
 
         if (isset($incoming->groupBy)) {
             $retval->groupBy($incoming->groupBy);
+        }
+
+        if (isset($incoming->search)) {
+            $retval->search($incoming->search);
         }
 
         if (isset($incoming->single) && $incoming->single) {
@@ -237,6 +242,13 @@ class Select
     public function single()
     {
         $this->isSingle = true;
+
+        return $this;
+    }
+
+    public function search($searchString)
+    {
+        $this->search = $searchString;
 
         return $this;
     }

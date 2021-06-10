@@ -196,7 +196,7 @@ class Table extends \Phidias\JsonDb\Table
             $record->data->id = $customId;
 
             $this->getRecordCollection()
-                ->attributes(["data", "dateModified", "authorId"]) // establecer los atributos que se pueden modificar
+                ->attributes(["customId", "data", "dateModified", "authorId", "keywords"]) // establecer los atributos que se pueden modificar
                 ->match("id", $record->id)
                 ->set("customId", $customId)
                 ->set("data", json_encode($record->data))
