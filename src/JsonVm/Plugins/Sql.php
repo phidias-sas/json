@@ -8,10 +8,12 @@ class Sql extends \Phidias\JsonVm\Plugin
 {
     public static function install($vm)
     {
-        $vm->defineStatement('and', [self::class, 'stmtAnd']);
-        $vm->defineStatement('or', [self::class, 'stmtOr']);
-        $vm->defineStatement('not', [self::class, 'stmtNot']);
-        $vm->defineStatement('op', [self::class, 'stmtOp']);
+        $className = get_called_class();
+
+        $vm->defineStatement('and', [$className, 'stmtAnd']);
+        $vm->defineStatement('or', [$className, 'stmtOr']);
+        $vm->defineStatement('not', [$className, 'stmtNot']);
+        $vm->defineStatement('op', [$className, 'stmtOp']);
     }
 
     /*
@@ -141,5 +143,4 @@ class Sql extends \Phidias\JsonVm\Plugin
 
         return "$fieldName IN (" . implode(", ", $items) . ")";
     }
-
 }
