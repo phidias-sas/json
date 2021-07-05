@@ -76,7 +76,7 @@ class Sql extends \Phidias\JsonVm\Plugin
     public static function stmtOp($expr, $vm)
     {
         $operatorName = $expr->op;
-        $callable = [self::class, 'op_' . $operatorName];
+        $callable = [get_called_class(), 'op_' . $operatorName];
         if (!is_callable($callable)) {
             throw new \Exception("Undefined operator '$operatorName'");
         }
