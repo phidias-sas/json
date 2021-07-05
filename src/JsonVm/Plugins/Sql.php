@@ -95,6 +95,16 @@ class Sql extends \Phidias\JsonVm\Plugin
         return $callable($fieldName, $args, $vm);
     }
 
+    public static function op_between($fieldName, $args)
+    {
+        if (!is_array($args) || count($args) != 2) {
+            throw new \Exception("Invalid arguments for operator 'bewteen'");
+        }
+
+        $condition = $fieldName . " BETWEEN " . DbUtils::escape($args[0])  . " AND " . DbUtils::escape($args[1]);
+        return $condition;
+    }
+
     public static function op_eq($fieldName, $args)
     {
         return "$fieldName = $args";
