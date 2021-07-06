@@ -1,26 +1,46 @@
 <?php
 
-namespace Phidias\JsonVm\Plugins;
+namespace Phidias\JsonDb;
 
 use Phidias\JsonDb\Utils as DbUtils;
 
-class Sql extends \Phidias\JsonVm\Plugin
+class SqlVm extends \Phidias\JsonVm\Vm
 {
-    public static function install($vm)
+    public $operators;
+    public $translationFunction;
+
+    public function __construct()
     {
+        parent::__construct();
+        $this->operators = [];
+
         $className = get_called_class();
+        $this->defineStatement('and', [$className, 'stmtAnd']);
+        $this->defineStatement('or', [$className, 'stmtOr']);
+        $this->defineStatement('not', [$className, 'stmtNot']);
+        $this->defineStatement('op', [$className, 'stmtOp']);
 
-        $vm->defineStatement('and', [$className, 'stmtAnd']);
-        $vm->defineStatement('or', [$className, 'stmtOr']);
-        $vm->defineStatement('not', [$className, 'stmtNot']);
-        $vm->defineStatement('op', [$className, 'stmtOp']);
+        $this->translationFunction = null;
     }
 
-    /*
+    public function evaluate($expr, $fieldTranslationFunction = null)
     {
-        "and": [stmt1, stmt2, ...stmtN]
+        $this->translationFunction = $fieldTranslationFunction;
+        $result = parent::evaluate($expr);
+        $this->translationFunction = null;
+
+        return $result;
     }
-    */
+
+    public function defineOperator($operatorName, $callable)
+    {
+        if (!is_callable($callable)) {
+            throw new \Exception("defineOperator: Invalid callable for '$operatorName'");
+        }
+
+        $this->operators[$operatorName] = $callable;
+    }
+
     public static function stmtAnd($expr, $vm)
     {
         $statements = $expr->and;
@@ -36,11 +56,6 @@ class Sql extends \Phidias\JsonVm\Plugin
         return "(" . implode(" AND ", $conditions) . ")";
     }
 
-    /*
-    {
-        "or": [stmt1, stmt2, ...stmtN]
-    }
-    */
     public static function stmtOr($expr, $vm)
     {
         $statements = $expr->or;
@@ -56,36 +71,32 @@ class Sql extends \Phidias\JsonVm\Plugin
         return "(" . implode(" OR ", $conditions) . ")";
     }
 
-    /*
-    {
-        "not": "...expr..."
-    }
-    */
     public static function stmtNot($expr, $vm)
     {
         return "( NOT " . $vm->evaluate($expr->not) . ")";
     }
 
-    /*
-    {
-        "op": gt | gte | lt | lte | eq | neq,
-        "field": "PROPERTY NAME",
-        "args": ...
-    }
-    */
     public static function stmtOp($expr, $vm)
     {
         $operatorName = $expr->op;
-        $callable = [get_called_class(), 'op_' . $operatorName];
-        if (!is_callable($callable)) {
-            throw new \Exception("Undefined operator '$operatorName'");
-        }
-
         if (!isset($expr->field)) {
             throw new \Exception("No field specified in operator '$operatorName'");
         }
 
+        if (isset($vm->operators[$operatorName])) {
+            $callable = $vm->operators[$operatorName];
+        } else {
+            $callable = [get_called_class(), 'op_' . $operatorName];
+            if (!is_callable($callable)) {
+                throw new \Exception("Undefined operator '$operatorName'");
+            }
+        }
+
         $fieldName = $expr->field;
+        if ($vm->translationFunction) {
+            $fieldName = ($vm->translationFunction)($fieldName);
+        }
+
         $args = isset($expr->args) ? $expr->args : null;
 
         if ($args && is_string($args) && !is_numeric($args)) {
@@ -94,6 +105,9 @@ class Sql extends \Phidias\JsonVm\Plugin
 
         return $callable($fieldName, $args, $vm);
     }
+
+
+    /* Basic SQL operators */
 
     public static function op_between($fieldName, $args)
     {

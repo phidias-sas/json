@@ -76,11 +76,8 @@ class Table extends \Phidias\JsonDb\Table
             return $this;
         }
 
-        $vm = new \Phidias\JsonVm\Vm();
-        $vm->addPlugin(new \Phidias\JsonVm\Plugins\Sql);
-
-        $parsedCondition = $vm->evaluate($condition);
-        $this->collection->where($parsedCondition);
+        $conditionSql = $this->evaluateWhere($condition);
+        $this->collection->where($conditionSql);
 
         return $this;
     }

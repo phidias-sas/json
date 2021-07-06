@@ -32,6 +32,17 @@ class Table extends \Phidias\JsonDb\Table
             ->match("tableId", $this->tableName);
     }
 
+    public function translateFieldName($fieldName)
+    {
+        if ($fieldName == "id") {
+            return "customId";
+        } else if (substr($fieldName, 0, 7) == "record.") {
+            return substr($fieldName, 7);
+        } else {
+            return "JSON_EXTRACT(data, '$.$fieldName')";
+        }
+    }
+
     private function getRecordCollection()
     {
         $schema = Record::getSchema();
@@ -337,11 +348,8 @@ class Table extends \Phidias\JsonDb\Table
 
     public function where($condition)
     {
-        $vm = new \Phidias\JsonVm\Vm();
-        $vm->addPlugin(new JsonVmPlugin);
-
-        $parsedCondition = $vm->evaluate($condition);
-        $this->collection->where($parsedCondition);
+        $conditionSql = $this->evaluateWhere($condition);
+        $this->collection->where($conditionSql);
 
         return $this;
     }

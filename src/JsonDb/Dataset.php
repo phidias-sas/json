@@ -2,29 +2,38 @@
 
 namespace Phidias\JsonDb;
 
+use Exception;
+
 class Dataset
 {
     private $sources;
     private $maxLimit;
+    private $vm;
 
     public function __construct()
     {
         $this->sources = [];
         $this->maxLimit = 5000;
+        $this->vm = new SqlVm();
     }
 
-    public function addSource($dbName, $dbObject, $isDefault = false)
+    public function addSource($sourceName, $sourceObject, $isDefault = false)
     {
-        if (!is_a($dbObject, 'Phidias\JsonDb\Source')) {
-            throw new \Exception("Source must be of type Phidias\JsonDb\Source");
+        if (!is_a($sourceObject, 'Phidias\JsonDb\Source')) {
+            throw new Exception("Source must be of type Phidias\JsonDb\Source");
         }
 
-        $this->sources[$dbName] = $dbObject;
+        $this->sources[$sourceName] = $sourceObject;
         if ($isDefault) {
-            $this->sources['default'] = $this->sources[$dbName];
+            $this->sources['default'] = $this->sources[$sourceName];
         }
 
         return $this;
+    }
+
+    public function defineOperator($operatorName, $callable)
+    {
+        return $this->vm->defineOperator($operatorName, $callable);
     }
 
     public function query($query, $joinData = null)
@@ -33,11 +42,13 @@ class Dataset
         $query = Select::factory($query);
 
         if (!isset($this->sources[$query->from->db])) {
-            throw new \Exception("Source '{$query->from->db}' not found in dataset");
+            throw new Exception("Source '{$query->from->db}' not found in dataset");
         }
 
-        $db = $this->sources[$query->from->db];
-        $table = $db->getTable($query->from->table);
+        $source = $this->sources[$query->from->db];
+        $table = $source->getTable($query->from->table);
+
+        $table->setVm($this->vm);
 
         // Establecer propiedades a seleccionar e identificar relaciones
         $useAllProperties = false;
@@ -50,7 +61,7 @@ class Dataset
                 $propSource = $property->$propName;
 
                 if (!isset($propSource->on)) {
-                    throw new \Exception("No 'on' specified in nested source '$propName'");
+                    throw new Exception("No 'on' specified in nested source '$propName'");
                 }
 
                 // on: {"foreignColumn": "localColumn"}
@@ -84,6 +95,25 @@ class Dataset
 
         // Establecer condiciones de "match"
         foreach ($query->match as $keyName => $keyValue) {
+
+            // si $keyValue es un objeto "query", hacer un match interno :)
+            if (isset($keyValue->from)) {
+                if (!isset($keyValue->properties) || !is_string($keyValue->properties)) {
+                    throw new Exception("'properties' debe ser un STRING en un match anidado");
+                }
+                $targetProp = $keyValue->properties;
+
+                $targetValues = [];
+                $matchTargets = $this->query($keyValue);
+                foreach ($matchTargets as $matchingRecord) {
+                    if (isset($matchingRecord->$targetProp)) {
+                        $targetValues[$matchingRecord->$targetProp] = $matchingRecord->$targetProp;
+                    }
+                }
+
+                $keyValue = array_values($targetValues);
+            }
+
             $table->match($keyName, $keyValue);
         }
 

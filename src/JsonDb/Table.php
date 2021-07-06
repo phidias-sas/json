@@ -4,6 +4,23 @@ namespace Phidias\JsonDb;
 
 class Table
 {
+    private $vm;
+
+    public function setVm($vm)
+    {
+        $this->vm = $vm;
+    }
+
+    public function translateFieldName($fieldName)
+    {
+        return $fieldName;
+    }
+
+    public function evaluateWhere($condition)
+    {
+        return $this->vm->evaluate($condition, [$this, 'translateFieldName']);
+    }
+
     public function insert($data)
     {
         return null;
