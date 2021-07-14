@@ -11,6 +11,7 @@ class Select
     public $match;
     public $where;
     public $limit;
+    public $page;
     public $order;
     public $having;
     public $groupBy;
@@ -75,6 +76,10 @@ class Select
             $retval->limit($incoming->limit);
         }
 
+        if (isset($incoming->page)) {
+            $retval->page($incoming->page);
+        }
+
         if (isset($incoming->order)) {
             $retval->order($incoming->order);
         }
@@ -120,6 +125,7 @@ class Select
         $this->match = new \stdClass;
         $this->where = null;
         $this->limit = null;
+        $this->page = null;
         $this->order = null;
         $this->having = null;
         $this->groupBy = null;
@@ -214,6 +220,13 @@ class Select
     public function limit($limit)
     {
         $this->limit = $limit;
+
+        return $this;
+    }
+
+    public function page($page)
+    {
+        $this->page = $page;
 
         return $this;
     }

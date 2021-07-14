@@ -57,6 +57,11 @@ class Table
         return $this;
     }
 
+    public function page($page)
+    {
+        return $this;
+    }
+
     public function order($order)
     {
         return $this;

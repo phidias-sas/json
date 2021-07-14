@@ -122,12 +122,12 @@ class Dataset
             $table->where($query->where);
         }
 
-        // Establecer condicionales ("where")
+        // Establecer condicion de agrupador ("having")
         if ($query->having) {
             $table->having($query->having);
         }
 
-        // Establecer condicionales ("where")
+        // Establecer agrupador ("groupBy")
         if ($query->groupBy) {
             $table->groupBy($query->groupBy);
         }
@@ -143,6 +143,12 @@ class Dataset
             $limit = max(0, min($limit, $query->limit));
         }
         $table->limit($limit);
+
+        // Página
+        if (isset($query->page)) {
+            $page = max(1, $query->page);
+            $table->page($page);
+        }
 
         // Orden
         if (isset($query->order)) {

@@ -51,6 +51,12 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
+    public function page($page)
+    {
+        $this->collection->page($page);
+        return $this;
+    }
+
     public function order($order)
     {
         $this->collection->order($order);
