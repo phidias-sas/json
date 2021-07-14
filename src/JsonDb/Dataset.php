@@ -13,7 +13,7 @@ class Dataset
     public function __construct()
     {
         $this->sources = [];
-        $this->maxLimit = 5000;
+        $this->maxLimit = 64000;
         $this->vm = new SqlVm();
     }
 
@@ -60,24 +60,29 @@ class Dataset
                 $propName = array_keys(get_object_vars($property))[0];
                 $propSource = $property->$propName;
 
-                if (!isset($propSource->on)) {
-                    throw new Exception("No 'on' specified in nested source '$propName'");
+                if (is_object($propSource)) {
+                    if (!isset($propSource->on)) {
+                        throw new Exception("No 'on' specified in nested source '$propName'");
+                    }
+
+                    // on: {"foreignColumn": "localColumn"}
+                    $foreignColumn = array_keys(get_object_vars($propSource->on))[0];
+                    $localColumn = $propSource->on->$foreignColumn;
+
+                    $relations[] = (object)[
+                        "propName" => $propName,
+                        "query" => $propSource,
+                        "foreign" => $foreignColumn,
+                        "local" => $localColumn,
+                        "hash" => []
+                    ];
+
+                    // Asegurarse de que el atributo a comparar venga en los registros
+                    $table->attribute($localColumn);
+                } else {
+                    $table->attribute($propName, $propSource);
+                    $properties[] = $propName;
                 }
-
-                // on: {"foreignColumn": "localColumn"}
-                $foreignColumn = array_keys(get_object_vars($propSource->on))[0];
-                $localColumn = $propSource->on->$foreignColumn;
-
-                $relations[] = (object)[
-                    "propName" => $propName,
-                    "query" => $propSource,
-                    "foreign" => $foreignColumn,
-                    "local" => $localColumn,
-                    "hash" => []
-                ];
-
-                // Asegurarse de que el atributo a comparar venga en los registros
-                $table->attribute($localColumn);
             } else {
                 $table->attribute($property);
                 $properties[] = $property;

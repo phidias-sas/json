@@ -8,7 +8,9 @@ class Table
 
     public function setVm($vm)
     {
-        $this->vm = $vm;
+        $this->vm = new SqlVm;
+        $this->vm->operators = $vm->operators;
+        $this->vm->setTranslationFunction([$this, 'translateFieldName']);
     }
 
     public function translateFieldName($fieldName)
@@ -18,7 +20,7 @@ class Table
 
     public function evaluateWhere($condition)
     {
-        return $this->vm->evaluate($condition, [$this, 'translateFieldName']);
+        return $this->vm->evaluate($condition);
     }
 
     public function insert($data)
@@ -42,7 +44,7 @@ class Table
         return $this;
     }
 
-    public function attribute($attributeName)
+    public function attribute($attributeName, $attributeSource = null)
     {
         return $this;
     }

@@ -86,4 +86,53 @@ class Utils
 
         return "'$escaped'";
     }
+
+
+    public static function getProperty($sourceObject, $propertyName)
+    {
+        if (!$sourceObject || !$propertyName) {
+            return;
+        }
+
+        $propertyName = preg_replace("/\[(\w+)\]/", '.$1', $propertyName); // source[cosa] => source.cosa}
+        $propertyName = preg_replace('/^\./', '', $propertyName); // remove trailing dot
+        $o = $sourceObject;
+
+        $a = explode(".", $propertyName);
+        for ($i = 0, $n = count($a); $i < $n; $i++) {
+            // Ocurre cuando  propertyName:"nombre.foo"  sourceObject: {nombre: "A string"}
+            if ($o === null || !(is_object($o) || is_array($o))) {
+                return;
+            }
+
+            $k = $a[$i];
+            if (is_object($o) && isset($o->$k)) {
+                $o = $o->$k;
+            } else if (is_array($o) && isset($o[$k])) {
+                $o = $o[$k];
+            } else {
+                return;
+            }
+        }
+
+        return $o;
+    }
+
+    public static function setProperty($obj, $propertyName, $value)
+    {
+        $parts = explode(".", $propertyName, 2);
+
+        if (count($parts) == 1) {
+            $obj->$propertyName = $value;
+            return $obj;
+        }
+
+        if (count($parts) == 2) {
+            if (!isset($obj->{$parts[0]})) {
+                $obj->{$parts[0]} = new \stdClass;
+            }
+
+            return self::setProperty($obj->{$parts[0]}, $parts[1], $value);
+        }
+    }
 }

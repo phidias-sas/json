@@ -23,13 +23,13 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->translationFunction = null;
     }
 
-    public function evaluate($expr, $fieldTranslationFunction = null)
+    public function setTranslationFunction($callable)
     {
-        $this->translationFunction = $fieldTranslationFunction;
-        $result = parent::evaluate($expr);
-        $this->translationFunction = null;
+        if (!is_callable($callable)) {
+            throw new \Exception("setTranslationFunction: Invalid callable in setTranslationFunction");
+        }
 
-        return $result;
+        $this->translationFunction = $callable;
     }
 
     public function defineOperator($operatorName, $callable)
@@ -99,7 +99,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
 
         $args = isset($expr->args) ? $expr->args : null;
 
-        if ($args && is_string($args) && !is_numeric($args)) {
+        if ($args && is_string($args) && !is_numeric($args) && $operatorName != 'contains' && $operatorName != 'hasAny') {
             $args = DbUtils::escape($args);
         }
 
@@ -166,5 +166,17 @@ class SqlVm extends \Phidias\JsonVm\Vm
         }
 
         return "$fieldName IN (" . implode(", ", $items) . ")";
+    }
+
+    public static function op_contains($fieldName, $args, $vm)
+    {
+        $encodedArgs = "'" . json_encode($args) . "'";
+        return "JSON_CONTAINS($fieldName, $encodedArgs)";
+    }
+
+    public static function op_hasAny($fieldName, $args, $vm)
+    {
+        $encodedArgs = "'" . json_encode($args) . "'";
+        return "JSON_CONTAINS($fieldName, $encodedArgs)";
     }
 }

@@ -19,7 +19,7 @@ class Table extends \Phidias\JsonDb\Table
         $this->attributes = [];
     }
 
-    public function attribute($attributeName)
+    public function attribute($attributeName, $attributeSource = null)
     {
         if ($attributeName == "*") {
             $this->collection->allAttributes();
@@ -28,7 +28,7 @@ class Table extends \Phidias\JsonDb\Table
             }
         } else {
             $this->attributes[$attributeName] = $attributeName;
-            $this->collection->attribute($attributeName);
+            $this->collection->attribute($attributeName, $attributeSource);
         }
 
         return $this;

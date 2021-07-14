@@ -55,8 +55,14 @@ class Select
         foreach ($incoming->properties as $incomingProperty) {
             if (is_object($incomingProperty)) {
                 $propertyName = array_keys(get_object_vars($incomingProperty))[0];
-                $nestedSelect = self::factory($incomingProperty->$propertyName);
-                $retval->property($propertyName, $nestedSelect);
+                $propertySource = $incomingProperty->$propertyName;
+
+                if (is_object($propertySource)) {
+                    $nestedSelect = self::factory($propertySource);
+                    $retval->property($propertyName, $nestedSelect);
+                } else {
+                    $retval->property($propertyName, $propertySource);
+                }
             } else {
                 $retval->property($incomingProperty);
             }

@@ -354,7 +354,7 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
-    public function attribute($attributeName)
+    public function attribute($attributeName, $attributeSource = null)
     {
         $attributeName = trim($attributeName);
         if (!$attributeName) {
@@ -370,8 +370,10 @@ class Table extends \Phidias\JsonDb\Table
         } else if ($attributeName == "*") {
             $this->useAllAttributes = true;
             $this->collection->attribute("data");
-        } else {
+        } else if ($attributeSource == null) {
             $this->collection->attribute("x.$attributeName", "JSON_EXTRACT(data, '$.$attributeName')");
+        } else {
+            $this->collection->attribute($attributeName, $attributeSource);
         }
 
         return $this;
