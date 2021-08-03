@@ -154,9 +154,14 @@ class Table extends \Phidias\JsonDb\Table
             $current = $existingRecords[$record->id];
             $hasChanges = false;
             foreach ($record as $propName => $incomingValue) {
-                // $diff = $current->data->$propName != $incomingValue;
-                $diff = json_encode($current->data->$propName) != json_encode($incomingValue);
-                if (!isset($current->data->$propName) || $diff) {
+                $diff = false;  // El nuevo valor de la propiedad es distinto al existente.
+                if (!isset($current->data->$propName)) {
+                    $diff = true;
+                } else {
+                    $diff = json_encode($current->data->$propName) != json_encode($incomingValue);
+                }
+
+                if ($diff) {
                     $current->data->$propName = $incomingValue;
                     $hasChanges = true;
                 }
