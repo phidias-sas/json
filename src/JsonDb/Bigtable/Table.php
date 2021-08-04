@@ -96,7 +96,7 @@ class Table extends \Phidias\JsonDb\Table
             $record->data = $data;
             $record->dateCreated = time();
             $record->authorId = $authorId;
-            $record->keywords = "";
+            $record->keywords = self::getKeywords($data);
             $record->dateModified = null;
             $record->dateDeleted = null;
 
@@ -188,7 +188,7 @@ class Table extends \Phidias\JsonDb\Table
             $newRecord->data = $data;
             $newRecord->dateCreated = time();
             $newRecord->authorId = $authorId;
-            $newRecord->keywords = "";
+            $newRecord->keywords = self::getKeywords($data);
             $newRecord->dateModified = null;
             $newRecord->dateDeleted = null;
 
@@ -211,6 +211,8 @@ class Table extends \Phidias\JsonDb\Table
             $customId = isset($record->data->id) ? $record->data->id : $record->id;
             $record->data->id = $customId;
 
+            $keywords = self::getKeywords($record->data);
+
             $this->getRecordCollection()
                 ->attributes(["customId", "data", "dateModified", "authorId", "keywords"]) // establecer los atributos que se pueden modificar
                 ->match("id", $record->id)
@@ -218,7 +220,7 @@ class Table extends \Phidias\JsonDb\Table
                 ->set("data", json_encode($record->data))
                 ->set("dateModified", time())
                 ->set("authorId", $authorId)
-                // ->set("keywords", $keywords)
+                ->set("keywords", $keywords)
                 ->update();
 
             $retval[] = $record->data;
@@ -263,7 +265,7 @@ class Table extends \Phidias\JsonDb\Table
         if ($hasChanges) {
             $record->dateModified = time();
 
-            // $keywords = self::getKeywords($record->data, ["card.text", "card.secondary"]);
+            $keywords = self::getKeywords($record->data);
 
             $this->getRecordCollection()
                 ->attributes(["data", "dateModified", "authorId"]) // establecer los atributos que se pueden modificar
@@ -272,7 +274,7 @@ class Table extends \Phidias\JsonDb\Table
                 ->set("data", json_encode($record->data))
                 ->set("dateModified", $record->dateModified)
                 ->set("authorId", $authorId)
-                // ->set("keywords", $keywords)
+                ->set("keywords", $keywords)
 
                 ->update();
 
@@ -486,39 +488,8 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
-    /**
-     * Esta funcion recibe un objeto arbitrario
-     *
-     * foo: {
-     *   things: ['one', 'two'],
-     *   firstName: 'Santiago',
-     *   stuff: {
-     *     word1: 'Hola',
-     *     word2: 'Mundo'
-     *   }
-     * }
-     *
-     * y una lista ($attrs) de paths simples indicando propiedades del objeto
-     *
-     * $attrs = ['things[1]', 'firstName', 'stuff.word2']
-     *
-     * y genera una CADENA con todos los valores de esas propiedades separadas por espacios
-     * <<
-     * "two Santiago Mundo"
-     */
-    private static function getKeywords($objData, $attrs = [])
+    private static function getKeywords($objData)
     {
-        $words = [];
-        foreach ($attrs as $attr) {
-            $word = JsonUtils::getProperty($objData, $attr);
-            if (!is_string($word)) {
-                // $word = json_encode($word);
-                continue;
-            }
-
-            $words[] = $word;
-        }
-
-        return trim(implode(" ", $words));
+        return isset($objData->_keywords) ? $objData->_keywords : null;
     }
 }
