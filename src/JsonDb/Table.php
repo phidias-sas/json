@@ -84,6 +84,10 @@ class Table
         return [];
     }
 
+    public function search($searchString)
+    {
+        return $this;
+    }
 
     public function sql($query, $params = null)
     {
