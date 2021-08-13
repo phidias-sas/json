@@ -99,7 +99,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
 
         $args = isset($expr->args) ? $expr->args : null;
 
-        if ($args && is_string($args) && !is_numeric($args) && $operatorName != 'contains' && $operatorName != 'hasAny') {
+        if ($args && is_string($args) /*&& !is_numeric($args)*/ && $operatorName != 'contains' && $operatorName != 'hasAny') {
             $args = DbUtils::escape($args);
         }
 
