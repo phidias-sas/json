@@ -103,10 +103,14 @@ class Dataset
 
             // si $keyValue es un objeto "query", hacer un match interno :)
             if (isset($keyValue->from)) {
-                if (!isset($keyValue->properties) || !is_string($keyValue->properties)) {
-                    throw new Exception("'properties' debe ser un STRING en un match anidado");
+
+                if (is_array($keyValue->properties) && count($keyValue->properties) == 1) {
+                    $targetProp = $keyValue->properties[0];
+                } else if (is_string($keyValue->properties)) {
+                    $targetProp = $keyValue->properties;
+                } else {
+                    throw new Exception("En un match anidado, 'properties' debe ser un STRING o tener un unico elemento");
                 }
-                $targetProp = $keyValue->properties;
 
                 $targetValues = [];
                 $matchTargets = $this->query($keyValue);
