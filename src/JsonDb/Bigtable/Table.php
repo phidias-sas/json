@@ -304,7 +304,8 @@ class Table extends \Phidias\JsonDb\Table
 
         $this->getRecordCollection()
             ->match("tableId", $this->tableName)
-            ->match("id", $recordId)
+            // ->match("id", $recordId)
+            ->match("customId", $recordId)
             ->limit(1)
             ->delete();
 
