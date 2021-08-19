@@ -300,11 +300,10 @@ class Table extends \Phidias\JsonDb\Table
     public function delete($recordId)
     {
         // Primero hacer un GET (tira una exception si no existe)
-        $record = $this->getRecordCollection()->allAttributes()->fetch($recordId);
+        $record = $this->getRecord($recordId);
 
         $this->getRecordCollection()
             ->match("tableId", $this->tableName)
-            // ->match("id", $recordId)
             ->match("customId", $recordId)
             ->limit(1)
             ->delete();
