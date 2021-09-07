@@ -95,8 +95,8 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $fieldName = $expr->field;
         if ($vm->translationFunction) {
             // $fieldName = ($vm->translationFunction)($fieldName);  // NOT PHP 5 compliant
-            $callable = $vm->translationFunction;
-            $fieldName = $callable($fieldName);            
+            $trnCallabale = $vm->translationFunction;
+            $fieldName = $trnCallabale($fieldName);
         }
 
         $args = isset($expr->args) ? $expr->args : null;
