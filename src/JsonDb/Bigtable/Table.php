@@ -82,7 +82,7 @@ class Table extends \Phidias\JsonDb\Table
 
         $records = $this->getRecordCollection()->allAttributes();
         $db = $records->getDb();
-        $db->query("SET autocommit = 0");
+        // $db->query("SET autocommit = 0");  /// !!!! NOOO. Esto cambia el 'autocommit' para toda la conexion (asi que queries posteriores no se van a ejecutar !)
         $db->query("START TRANSACTION");
 
         foreach ($targetRecords as $data) {
@@ -176,7 +176,7 @@ class Table extends \Phidias\JsonDb\Table
 
         $records = $this->getRecordCollection()->allAttributes();
         $db = $records->getDb();
-        $db->query("SET autocommit = 0");
+        // $db->query("SET autocommit = 0");
         $db->query("START TRANSACTION");
 
         foreach ($newRecords as $data) {
