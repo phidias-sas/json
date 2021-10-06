@@ -40,6 +40,7 @@ class Table extends \Phidias\JsonDb\Table
             return substr($fieldName, 7);
         } else {
             return "JSON_EXTRACT(data, '$.$fieldName')";
+            // return "JSON_UNQUOTE(JSON_EXTRACT(data, '$.$fieldName'))";
         }
     }
 
@@ -379,6 +380,7 @@ class Table extends \Phidias\JsonDb\Table
             $this->collection->attribute("data");
         } else if ($attributeSource == null) {
             $this->collection->attribute("x.$attributeName", "JSON_EXTRACT(data, '$.$attributeName')");
+            // $this->collection->attribute("x.$attributeName", "JSON_UNQUOTE(JSON_EXTRACT(data, '$.$attributeName'))");
         } else {
             $this->collection->attribute($attributeName, $attributeSource);
         }
@@ -433,6 +435,12 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
+    public function groupBy($groupBy)
+    {
+        $this->collection->groupBy($groupBy);
+        return $this;
+    }
+
     public function fetch()
     {
         $retval = [];
@@ -453,6 +461,11 @@ class Table extends \Phidias\JsonDb\Table
                     $retvalItem->$attributeName = isset($record->$attrName) ? $record->$attrName : null;
                 } else if (isset($record->{"x." . $attributeName})) {
                     $retvalItem->$attributeName = json_decode($record->{"x." . $attributeName});
+                    // $retvalItem->$attributeName = $record->{"x." . $attributeName};
+                    // $decoded = json_decode($record->{"x." . $attributeName});
+                    // if ($decoded) {
+                    //     $retvalItem->$attributeName = $decoded;
+                    // }
                     unset($record->{"x." . $attributeName});
                 } else {
                     // Se habia solicitado el atributo mediante this->attribute
