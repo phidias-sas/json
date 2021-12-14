@@ -227,24 +227,22 @@ class Dataset
 
                 $keyValue = $relRecord->{$relationData->foreign};
 
-                if (!is_scalar($keyValue)) {
-                    // dumpx("hoh", $keyValue);
-                    continue;
-                }
+                $arrKeyValues = is_array($keyValue) ? $keyValue : [$keyValue];
+                foreach ($arrKeyValues as $keyValue) {
+                    if (!isset($relationData->hash[$keyValue])) {
+                        continue;
+                    }
 
-                if (!isset($relationData->hash[$keyValue])) {
-                    continue;
-                }
-
-                $parentRecords = $relationData->hash[$keyValue];
-                foreach ($parentRecords as $parentRecord) {
-                    if ($relationData->query->isSingle) {
-                        $parentRecord->{$relationData->propName} = $relRecord;
-                    } else {
-                        if (!isset($parentRecord->{$relationData->propName}) || !is_array($parentRecord->{$relationData->propName})) {
-                            $parentRecord->{$relationData->propName} = [];
+                    $parentRecords = $relationData->hash[$keyValue];
+                    foreach ($parentRecords as $parentRecord) {
+                        if ($relationData->query->isSingle) {
+                            $parentRecord->{$relationData->propName} = $relRecord;
+                        } else {
+                            if (!isset($parentRecord->{$relationData->propName}) || !is_array($parentRecord->{$relationData->propName})) {
+                                $parentRecord->{$relationData->propName} = [];
+                            }
+                            $parentRecord->{$relationData->propName}[] = $relRecord;
                         }
-                        $parentRecord->{$relationData->propName}[] = $relRecord;
                     }
                 }
             }
