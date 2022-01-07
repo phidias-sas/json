@@ -129,7 +129,7 @@ class Table extends \Phidias\JsonDb\Table
         $existingRecords = [];
         $recordIds = [];
         foreach ($incomingRecords as $record) {
-            if (isset($record->id)) {
+            if (isset($record->id) && $record->id) {
                 $recordIds[] = $record->id;
             }
         }
