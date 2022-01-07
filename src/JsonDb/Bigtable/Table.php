@@ -129,7 +129,7 @@ class Table extends \Phidias\JsonDb\Table
         $existingRecords = [];
         $recordIds = [];
         foreach ($incomingRecords as $record) {
-            if (isset($record->id) && $record->id) {
+            if (isset($record->id) && $record->id !== "") {
                 $recordIds[] = $record->id;
             }
         }
@@ -183,7 +183,7 @@ class Table extends \Phidias\JsonDb\Table
         foreach ($newRecords as $data) {
             $newRecord = new \stdClass;
             $newRecord->id = $records->getUniqueId();
-            $data->id = isset($data->id) ? $data->id : $newRecord->id;
+            $data->id = isset($data->id) && $data->id !== "" ? $data->id : $newRecord->id;
             $newRecord->customId = $data->id;
             $newRecord->tableId = $this->tableName;
             $newRecord->data = $data;
