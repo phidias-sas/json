@@ -36,7 +36,7 @@ class Dataset
         return $this->vm->defineOperator($operatorName, $callable);
     }
 
-    public function query($query, $joinData = null)
+    public function query($query, $matchableValues = null)
     {
         $retval = [];
         $query = Select::factory($query);
@@ -65,20 +65,30 @@ class Dataset
                         throw new Exception("No 'on' specified in nested source '$propName'");
                     }
 
-                    // on: {"foreignColumn": "localColumn"}
-                    $foreignColumn = array_keys(get_object_vars($propSource->on))[0];
-                    $localColumn = $propSource->on->$foreignColumn;
-
                     $relations[] = (object)[
                         "propName" => $propName,
                         "query" => $propSource,
-                        "foreign" => $foreignColumn,
-                        "local" => $localColumn,
-                        "hash" => []
+                        "on" => $propSource->on,
+                        "hash" => [],  // This query's records hashed according to the subquery columns
+                        /* e.g.
+                        on: {
+                            personId: x,
+                            groupId: x
+                        }
+                        hash['p1:g1:'] => the record that has personId: p1, groupId: g1
+                        */
+
+                        "matchableValues" => []
+                        /*
+                        matchableValues[personId] = [1,2,3,4,....]
+                        matchableValues[groupId] = [1,2,3,4,....]
+                        */
                     ];
 
-                    // Asegurarse de que el atributo a comparar venga en los registros
-                    $table->attribute($localColumn);
+                    // Make sure all "on"d attributes are present
+                    foreach ($propSource->on as $localColumn) {
+                        $table->attribute($localColumn);
+                    }
                 } else {
                     $table->attribute($propName, $propSource);
                     $properties[] = $propName;
@@ -165,14 +175,15 @@ class Dataset
         }
 
         // Si este es un sub-query, filtrar segun los datos de la condicion de join ("on")
-        if ($joinData) {
-            $table->match($joinData->keyName, $joinData->keyValue);
-
-            $table->attribute($joinData->keyName);
-            $properties[] = $joinData->keyName;
+        if ($matchableValues) {
+            foreach ($matchableValues as $columnName => $columnValues) {
+                $table->attribute($columnName);
+                $table->match($columnName, $columnValues);
+                $properties[] = $columnName;
+            }
         }
 
-        // Fetch all records and populate relation condition data
+        // Fetch all records
         foreach ($table->fetch() as $record) {
             if ($useAllProperties) {
                 $retvalItem = $record;
@@ -185,23 +196,34 @@ class Dataset
                 }
             }
 
+            // Populate relation hashes
             foreach ($relations as $relationData) {
                 // Inicializar la propiedad relacionada en blanco
                 $retvalItem->{$relationData->propName} = $relationData->query->isSingle ? null : [];
 
-                $localPropName = $relationData->local;
-                if (!isset($record->$localPropName)) {
-                    continue;
-                }
-
-                $localValues = is_array($record->$localPropName) ? $record->$localPropName : [$record->$localPropName];
-                foreach ($localValues as $hashValue) {
-                    if (!is_scalar($hashValue)) {
-                        continue;
+                foreach ($relationData->on as $foreignPropName => $localPropName) {
+                    if (!isset($record->$localPropName)) {
+                        continue 2;
                     }
-
-                    $relationData->hash[$hashValue][] = $retvalItem;
                 }
+
+                $hashKey = '';
+                foreach ($relationData->on as $foreignPropName => $localPropName) {
+                    $hashValue = $record->$localPropName;
+                    $hashKey .= $hashValue . ':';
+
+                    // Build match condition for subquery
+                    if (!isset($relationData->matchableValues[$foreignPropName])) {
+                        $relationData->matchableValues[$foreignPropName] = [];
+                    }
+                    $relationData->matchableValues[$foreignPropName][$record->$localPropName] = $record->$localPropName;
+                }
+
+                if (!isset($relationData->hash[$hashKey])) {
+                    $relationData->hash[$hashKey] = [];
+                }
+
+                $relationData->hash[$hashKey][] = $retvalItem;
             }
 
             $retval[] = $retvalItem;
@@ -210,39 +232,31 @@ class Dataset
         // Resolve each relation
         foreach ($relations as $relationData) {
             // Fetch all related records
-            if (count($relationData->hash)) {
-                $relatedRecords = $this->query($relationData->query, (object)[
-                    "keyName" => $relationData->foreign,
-                    "keyValue" => array_keys($relationData->hash)
-                ]);
+            if (count($relationData->hash) && count($relationData->matchableValues)) {
+                $relatedRecords = $this->query($relationData->query, $relationData->matchableValues);
             } else {
                 $relatedRecords = [];
             }
 
             // Merge related records into result
             foreach ($relatedRecords as $relRecord) {
-                if (!isset($relRecord->{$relationData->foreign})) {
-                    continue;
+                $hashKey = '';
+                foreach ($relationData->on as $foreignPropName => $localPropName) {
+                    if (!isset($relRecord->$foreignPropName)) {
+                        continue 2;
+                    }
+                    $hashKey .= $relRecord->$foreignPropName . ':';
                 }
 
-                $keyValue = $relRecord->{$relationData->foreign};
-
-                $arrKeyValues = is_array($keyValue) ? $keyValue : [$keyValue];
-                foreach ($arrKeyValues as $keyValue) {
-                    if (!isset($relationData->hash[$keyValue])) {
-                        continue;
-                    }
-
-                    $parentRecords = $relationData->hash[$keyValue];
-                    foreach ($parentRecords as $parentRecord) {
-                        if ($relationData->query->isSingle) {
-                            $parentRecord->{$relationData->propName} = $relRecord;
-                        } else {
-                            if (!isset($parentRecord->{$relationData->propName}) || !is_array($parentRecord->{$relationData->propName})) {
-                                $parentRecord->{$relationData->propName} = [];
-                            }
-                            $parentRecord->{$relationData->propName}[] = $relRecord;
+                $parentRecords = isset($relationData->hash[$hashKey]) ? $relationData->hash[$hashKey] : [];
+                foreach ($parentRecords as $parentRecord) {
+                    if ($relationData->query->isSingle) {
+                        $parentRecord->{$relationData->propName} = $relRecord;
+                    } else {
+                        if (!isset($parentRecord->{$relationData->propName}) || !is_array($parentRecord->{$relationData->propName})) {
+                            $parentRecord->{$relationData->propName} = [];
                         }
+                        $parentRecord->{$relationData->propName}[] = $relRecord;
                     }
                 }
             }
