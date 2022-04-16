@@ -72,6 +72,7 @@ class Table extends \Phidias\JsonDb\Table
     {
         return $this->getRecordCollection()
             ->allAttributes()
+            ->match("tableId", $this->tableName)
             ->match("customId", $recordId)
             ->fetch();
     }
@@ -136,6 +137,7 @@ class Table extends \Phidias\JsonDb\Table
         if (count($recordIds)) {
             $probe = $this->getRecordCollection()
                 ->allAttributes()
+                ->match("tableId", $this->tableName)
                 ->match("customId", $recordIds)
                 ->find();
             foreach ($probe as $record) {
