@@ -20,6 +20,35 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineStatement('not', [$className, 'stmtNot']);
         $this->defineStatement('op', [$className, 'stmtOp']);
 
+        $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
+        $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
+
+        $this->defineOperator('string.same', ['\Phidias\JsonDb\Operators\OpString', 'same']);
+        $this->defineOperator('string.like', ['\Phidias\JsonDb\Operators\OpString', 'like']);
+        $this->defineOperator('string.eq', ['\Phidias\JsonDb\Operators\OpString', 'eq']);
+        $this->defineOperator('string.neq', ['\Phidias\JsonDb\Operators\OpString', 'neq']);
+        $this->defineOperator('string.includes', ['\Phidias\JsonDb\Operators\OpString', 'includes']);
+        $this->defineOperator('string.startsWith', ['\Phidias\JsonDb\Operators\OpString', 'startsWith']);
+        $this->defineOperator('string.endsWith', ['\Phidias\JsonDb\Operators\OpString', 'endsWith']);
+        $this->defineOperator('string.empty', ['\Phidias\JsonDb\Operators\OpString', 'empty']);
+        $this->defineOperator('string.nempty', ['\Phidias\JsonDb\Operators\OpString', 'nempty']);
+
+        $this->defineOperator('enum.eq', ['\Phidias\JsonDb\Operators\OpEnum', 'eq']);
+        $this->defineOperator('enum.any', ['\Phidias\JsonDb\Operators\OpEnum', 'any']);
+        $this->defineOperator('enum.all', ['\Phidias\JsonDb\Operators\OpEnum', 'all']);
+
+        $this->defineOperator('array.eq', ['\Phidias\JsonDb\Operators\OpArray', 'eq']);
+        $this->defineOperator('array.hasAny', ['\Phidias\JsonDb\Operators\OpArray', 'hasAny']);
+        $this->defineOperator('array.hasAll', ['\Phidias\JsonDb\Operators\OpArray', 'hasAll']);
+
+        $this->defineOperator('date.between', ['\Phidias\JsonDb\Operators\OpDate', 'between']);
+        $this->defineOperator('date.eq', ['\Phidias\JsonDb\Operators\OpDate', 'eq']);
+        $this->defineOperator('date.neq', ['\Phidias\JsonDb\Operators\OpDate', 'neq']);
+        $this->defineOperator('date.gt', ['\Phidias\JsonDb\Operators\OpDate', 'gt']);
+        $this->defineOperator('date.gte', ['\Phidias\JsonDb\Operators\OpDate', 'gte']);
+        $this->defineOperator('date.lt', ['\Phidias\JsonDb\Operators\OpDate', 'lt']);
+        $this->defineOperator('date.lte', ['\Phidias\JsonDb\Operators\OpDate', 'lte']);
+
         $this->translationFunction = null;
     }
 
@@ -101,15 +130,24 @@ class SqlVm extends \Phidias\JsonVm\Vm
 
         $args = isset($expr->args) ? $expr->args : null;
 
-        if ($args && is_string($args) /*&& !is_numeric($args)*/ && $operatorName != 'contains' && $operatorName != 'hasAny') {
-            $args = DbUtils::escape($args);
-        }
+        // if ($args && is_string($args) /*&& !is_numeric($args)*/ && $operatorName != 'contains' && $operatorName != 'hasAny') {
+        //     $args = DbUtils::escape($args);
+        // }
 
         return $callable($fieldName, $args, $vm);
     }
 
 
     /* Basic SQL operators */
+    public static function op_true($fieldName)
+    {
+        return "$fieldName IN ('true', '1')";
+    }
+
+    public static function op_false($fieldName)
+    {
+        return "$fieldName IN ('null', 'false', '0')";
+    }
 
     public static function op_between($fieldName, $args)
     {
@@ -123,36 +161,43 @@ class SqlVm extends \Phidias\JsonVm\Vm
 
     public static function op_eq($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName = $args";
     }
 
     public static function op_neq($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName != $args";
     }
 
     public static function op_gt($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName > $args";
     }
 
     public static function op_gte($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName >= $args";
     }
 
     public static function op_lt($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName < $args";
     }
 
     public static function op_lte($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName <= $args";
     }
 
     public static function op_like($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName LIKE $args";
     }
 

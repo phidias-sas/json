@@ -39,8 +39,8 @@ class Table extends \Phidias\JsonDb\Table
         } else if (substr($fieldName, 0, 7) == "record.") {
             return substr($fieldName, 7);
         } else {
-            return "JSON_EXTRACT(data, '$.$fieldName')";
-            // return "JSON_UNQUOTE(JSON_EXTRACT(data, '$.$fieldName'))";
+            // return "JSON_EXTRACT(data, '$.$fieldName')";
+            return "JSON_UNQUOTE(JSON_EXTRACT(data, '$.$fieldName'))";
         }
     }
 
