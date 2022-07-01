@@ -433,6 +433,36 @@ class Table extends \Phidias\JsonDb\Table
 
     public function order($order)
     {
+        /* Parse "order" array
+        [
+            {
+                "property": "id",
+                "desc": false
+            },
+            {
+                "property": "foo.name",
+                "desc": true
+            }
+        ]
+        */
+        if (is_array($order)) {
+            $orderColumns = [];
+            foreach ($order as $orderData) {
+                if (!isset($orderData->property)) {
+                    continue;
+                }
+
+                $isDesc = isset($orderData->desc) && $orderData->desc;
+                $orderColumns[] = "JSON_UNQUOTE(JSON_EXTRACT(data, '$.{$orderData->property}'))" . ($isDesc ? ' DESC' : ' ASC');
+            }
+
+            if (!count($orderColumns)) {
+                return $this;
+            }
+
+            $order = implode(', ', $orderColumns);
+        }
+
         $this->collection->order($order);
         return $this;
     }
