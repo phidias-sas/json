@@ -82,6 +82,7 @@ class Dataset
                         /*
                         matchableValues[personId] = [1,2,3,4,....]
                         matchableValues[groupId] = [1,2,3,4,....]
+                        matchableValues['$meta.authorId'] = [...]
                         */
                     ];
 
@@ -202,21 +203,21 @@ class Dataset
                 $retvalItem->{$relationData->propName} = $relationData->query->isSingle ? null : [];
 
                 foreach ($relationData->on as $foreignPropName => $localPropName) {
-                    if (!isset($record->$localPropName)) {
+                    if (!Utils::getProperty($record, $localPropName)) {
                         continue 2;
                     }
                 }
 
                 $hashKey = '';
                 foreach ($relationData->on as $foreignPropName => $localPropName) {
-                    $hashValue = $record->$localPropName;
+                    $hashValue = Utils::getProperty($record, $localPropName);
                     $hashKey .= $hashValue . ':';
 
                     // Build match condition for subquery
                     if (!isset($relationData->matchableValues[$foreignPropName])) {
                         $relationData->matchableValues[$foreignPropName] = [];
                     }
-                    $relationData->matchableValues[$foreignPropName][$record->$localPropName] = $record->$localPropName;
+                    $relationData->matchableValues[$foreignPropName][$hashValue] = $hashValue;
                 }
 
                 if (!isset($relationData->hash[$hashKey])) {
