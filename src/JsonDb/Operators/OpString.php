@@ -46,12 +46,11 @@ class OpString
 
     public static function empty($fieldName, $args)
     {
-        return "$fieldName = ''";
+        return "($fieldName = '' OR $fieldName IS NULL)";
     }
 
     public static function nempty($fieldName, $args)
     {
-        return "$fieldName != ''";
+        return "($fieldName != '' AND $fieldName IS NOT NULL)";
     }
-
 }

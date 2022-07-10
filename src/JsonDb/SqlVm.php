@@ -23,6 +23,12 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
         $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
 
+        $this->defineOperator('number.gt', [$className, 'op_gt']);
+        $this->defineOperator('number.gte', [$className, 'op_gte']);
+        $this->defineOperator('number.lt', [$className, 'op_lt']);
+        $this->defineOperator('number.lte', [$className, 'op_lte']);
+        $this->defineOperator('number.between', [$className, 'op_between']);
+
         $this->defineOperator('string.same', ['\Phidias\JsonDb\Operators\OpString', 'same']);
         $this->defineOperator('string.like', ['\Phidias\JsonDb\Operators\OpString', 'like']);
         $this->defineOperator('string.eq', ['\Phidias\JsonDb\Operators\OpString', 'eq']);
@@ -33,9 +39,12 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineOperator('string.empty', ['\Phidias\JsonDb\Operators\OpString', 'empty']);
         $this->defineOperator('string.nempty', ['\Phidias\JsonDb\Operators\OpString', 'nempty']);
 
-        $this->defineOperator('enum.eq', ['\Phidias\JsonDb\Operators\OpEnum', 'eq']);
-        $this->defineOperator('enum.any', ['\Phidias\JsonDb\Operators\OpEnum', 'any']);
-        $this->defineOperator('enum.all', ['\Phidias\JsonDb\Operators\OpEnum', 'all']);
+        $this->defineOperator('enum.any', [$className, 'enum_any']);
+
+        // To be deprecated:
+        $this->defineOperator('enum.eq', [$className, 'enum_any']);
+        $this->defineOperator('enum.all', [$className, 'enum_any']);
+
 
         $this->defineOperator('array.eq', ['\Phidias\JsonDb\Operators\OpArray', 'eq']);
         $this->defineOperator('array.hasAny', ['\Phidias\JsonDb\Operators\OpArray', 'hasAny']);
@@ -138,6 +147,21 @@ class SqlVm extends \Phidias\JsonVm\Vm
     }
 
 
+    public static function enum_any($fieldName, $args)
+    {
+        if (!is_array($args) || !count($args)) {
+            return "0";
+        }
+
+        $items = [];
+        foreach ($args as $arg) {
+            $items[] = DbUtils::escape($arg);
+        }
+
+        return "$fieldName IN (" . implode(", ", $items) . ")";
+    }
+
+
     /* Basic SQL operators */
     public static function op_true($fieldName)
     {
@@ -152,7 +176,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
     public static function op_between($fieldName, $args)
     {
         if (!is_array($args) || count($args) != 2) {
-            throw new \Exception("Invalid arguments for operator 'bewteen'");
+            throw new \Exception("Invalid arguments for operator 'between'");
         }
 
         $condition = $fieldName . " BETWEEN " . DbUtils::escape($args[0])  . " AND " . DbUtils::escape($args[1]);
