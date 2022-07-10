@@ -23,11 +23,11 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
         $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
 
-        $this->defineOperator('number.gt', [$className, 'op_gt']);
-        $this->defineOperator('number.gte', [$className, 'op_gte']);
-        $this->defineOperator('number.lt', [$className, 'op_lt']);
-        $this->defineOperator('number.lte', [$className, 'op_lte']);
-        $this->defineOperator('number.between', [$className, 'op_between']);
+        $this->defineOperator('number.gt', ['\Phidias\JsonDb\Operators\OpNumber', 'gt']);
+        $this->defineOperator('number.gte', ['\Phidias\JsonDb\Operators\OpNumber', 'gte']);
+        $this->defineOperator('number.lt', ['\Phidias\JsonDb\Operators\OpNumber', 'lt']);
+        $this->defineOperator('number.lte', ['\Phidias\JsonDb\Operators\OpNumber', 'lte']);
+        $this->defineOperator('number.between', ['\Phidias\JsonDb\Operators\OpNumber', 'between']);
 
         $this->defineOperator('string.same', ['\Phidias\JsonDb\Operators\OpString', 'same']);
         $this->defineOperator('string.like', ['\Phidias\JsonDb\Operators\OpString', 'like']);
