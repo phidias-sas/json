@@ -23,6 +23,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
         $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
 
+        $this->defineOperator('number.eq', ['\Phidias\JsonDb\Operators\OpNumber', 'eq']);
         $this->defineOperator('number.gt', ['\Phidias\JsonDb\Operators\OpNumber', 'gt']);
         $this->defineOperator('number.gte', ['\Phidias\JsonDb\Operators\OpNumber', 'gte']);
         $this->defineOperator('number.lt', ['\Phidias\JsonDb\Operators\OpNumber', 'lt']);
