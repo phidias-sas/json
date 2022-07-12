@@ -36,10 +36,9 @@ class Table extends \Phidias\JsonDb\Table
     {
         if ($fieldName == "id") {
             return "customId";
-        } else if (substr($fieldName, 0, 7) == "record.") {
-            return substr($fieldName, 7);
+        } else if (substr($fieldName, 0, 6) == '$meta.') {
+            return substr($fieldName, 6);
         } else {
-            // return "JSON_EXTRACT(data, '$.$fieldName')";
             return "JSON_UNQUOTE(JSON_EXTRACT(data, '$.$fieldName'))";
         }
     }
@@ -99,7 +98,7 @@ class Table extends \Phidias\JsonDb\Table
             $record->dateCreated = time();
             $record->authorId = $authorId;
             $record->keywords = self::getKeywords($data);
-            $record->dateModified = null;
+            $record->dateModified = $record->dateCreated;
             $record->dateDeleted = null;
 
             $records->insert($record); // Esto modifica $record->data con el valor insertado tal cual (es decir, lo deja como STRING)
@@ -192,7 +191,7 @@ class Table extends \Phidias\JsonDb\Table
             $newRecord->dateCreated = time();
             $newRecord->authorId = $authorId;
             $newRecord->keywords = self::getKeywords($data);
-            $newRecord->dateModified = null;
+            $newRecord->dateModified = $newRecord->dateCreated;
             $newRecord->dateDeleted = null;
 
             $records->insert($newRecord); // Esto modifica $newRecord->data con el valor insertado tal cual (es decir, lo deja como STRING)
@@ -375,8 +374,8 @@ class Table extends \Phidias\JsonDb\Table
 
         if ($attributeName == "id") {
             $this->collection->attribute("customId");
-        } else if (substr($attributeName, 0, 7) == "record.") {
-            $this->collection->attribute(substr($attributeName, 7));
+        } else if (substr($attributeName, 0, 6) == '$meta.') {
+            $this->collection->attribute(substr($attributeName, 6));
         } else if ($attributeName == "*") {
             $this->useAllAttributes = true;
             $this->collection->attribute("data");
@@ -394,8 +393,8 @@ class Table extends \Phidias\JsonDb\Table
     {
         if ($attributeName == "id") {
             $this->collection->match("customId", $attributeValue);
-        } else if (substr($attributeName, 0, 7) == "record.") {
-            $this->collection->match(substr($attributeName, 7), $attributeValue);
+        } else if (substr($attributeName, 0, 6) == '$meta.') {
+            $this->collection->match(substr($attributeName, 6), $attributeValue);
         } else {
             $valueCondition = '';
             if (is_array($attributeValue)) {
@@ -452,8 +451,14 @@ class Table extends \Phidias\JsonDb\Table
                     continue;
                 }
 
+                if (substr($orderData->property, 0, 6) == '$meta.') {
+                    $propertyValue = substr($orderData->property, 6);
+                } else {
+                    $propertyValue = "JSON_UNQUOTE(JSON_EXTRACT(data, '$.{$orderData->property}'))";
+                }
+
                 $isDesc = isset($orderData->desc) && $orderData->desc;
-                $orderColumns[] = "JSON_UNQUOTE(JSON_EXTRACT(data, '$.{$orderData->property}'))" . ($isDesc ? ' DESC' : ' ASC');
+                $orderColumns[] = $propertyValue . ($isDesc ? ' DESC' : ' ASC');
             }
 
             if (!count($orderColumns)) {
@@ -480,6 +485,13 @@ class Table extends \Phidias\JsonDb\Table
         // siempre traer ID (y atributos que identifican un ON con un padre?)
         $this->collection->attribute("customId");
 
+        // Always fetch metadata
+        $this->collection->attributes("id", "dateCreated", "dateModified", "authorId");
+        $this->attributes['$meta.id'] = '$meta.id';
+        $this->attributes['$meta.dateCreated'] = '$meta.dateCreated';
+        $this->attributes['$meta.dateModified'] = '$meta.dateModified';
+        $this->attributes['$meta.authorId'] = '$meta.authorId';
+
         foreach ($this->collection->find()->fetchAll() as $record) {
             if ($this->useAllAttributes) {
                 $retvalItem = isset($record->data) && is_object($record->data) ? $record->data : new \stdClass;
@@ -488,16 +500,15 @@ class Table extends \Phidias\JsonDb\Table
             }
 
             foreach ($this->attributes as $attributeName) {
-                if (substr($attributeName, 0, 7) == "record.") {
-                    $attrName = substr($attributeName, 7);
-                    $retvalItem->$attributeName = isset($record->$attrName) ? $record->$attrName : null;
+                if (substr($attributeName, 0, 6) == '$meta.') {
+                    if (!isset($retvalItem->{'$meta'})) {
+                        $retvalItem->{'$meta'} = new \stdClass;
+                    }
+                    $attrName = substr($attributeName, 6);
+                    $retvalItem->{'$meta'}->$attrName = isset($record->$attrName) ? $record->$attrName : null;
+                    // $retvalItem->{'$meta.'.$attrName} = isset($record->$attrName) ? $record->$attrName : null;
                 } else if (isset($record->{"x." . $attributeName})) {
                     $retvalItem->$attributeName = json_decode($record->{"x." . $attributeName});
-                    // $retvalItem->$attributeName = $record->{"x." . $attributeName};
-                    // $decoded = json_decode($record->{"x." . $attributeName});
-                    // if ($decoded) {
-                    //     $retvalItem->$attributeName = $decoded;
-                    // }
                     unset($record->{"x." . $attributeName});
                 } else {
                     // Se habia solicitado el atributo mediante this->attribute
