@@ -186,6 +186,10 @@ class SqlVm extends \Phidias\JsonVm\Vm
 
     public static function op_eq($fieldName, $args)
     {
+        if (is_array($args)) {
+            return self::op_in($fieldName, $args);
+        }
+
         $args = DbUtils::escape($args);
         return "$fieldName = $args";
     }
@@ -226,7 +230,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
         return "$fieldName LIKE $args";
     }
 
-    public static function op_in($fieldName, $args, $vm)
+    public static function op_in($fieldName, $args, $vm = null)
     {
         if (!is_array($args) || !count($args)) {
             return "0";
