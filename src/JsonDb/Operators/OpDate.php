@@ -6,7 +6,8 @@ class OpDate
 {
     private static function sanitizeFieldName($fieldName)
     {
-        return "IFNULL(UNIX_TIMESTAMP($fieldName), $fieldName)";
+        // return "IFNULL(UNIX_TIMESTAMP($fieldName), $fieldName)";
+        return "IF(UNIX_TIMESTAMP($fieldName), UNIX_TIMESTAMP($fieldName), $fieldName)";
     }
 
     public static function between($fieldName, $args)
