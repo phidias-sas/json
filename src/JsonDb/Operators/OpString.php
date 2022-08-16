@@ -31,16 +31,19 @@ class OpString
 
     public static function includes($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "CAST($fieldName as CHAR) LIKE '%$args%'";
     }
 
     public static function startsWith($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName LIKE '$args%'";
     }
 
     public static function endsWith($fieldName, $args)
     {
+        $args = DbUtils::escape($args);
         return "$fieldName LIKE '%$args'";
     }
 
