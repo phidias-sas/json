@@ -90,7 +90,10 @@ class Table extends \Phidias\JsonDb\Table
 
     public function search($searchString)
     {
-        $this->collection->search($searchString);
+        if (isset($searchString->value) && isset($searchString->attributes)) {
+            $this->collection->search($searchString->value, $searchString->attributes);
+        }
+
         return $this;
     }
 
