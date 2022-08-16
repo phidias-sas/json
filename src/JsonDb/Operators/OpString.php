@@ -31,7 +31,7 @@ class OpString
 
     public static function includes($fieldName, $args)
     {
-        return "$fieldName LIKE '%$args%'";
+        return "CAST($fieldName as CHAR) LIKE '%$args%'";
     }
 
     public static function startsWith($fieldName, $args)
