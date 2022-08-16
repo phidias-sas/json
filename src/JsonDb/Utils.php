@@ -53,7 +53,7 @@ class Utils
         return null;
     }
 
-    public static function escape($string)
+    public static function escape_string($string)
     {
         /**
          * Returns a string with backslashes before characters that need to be escaped.
@@ -85,6 +85,11 @@ class Utils
         }
 
         return "'$escaped'";
+    }
+
+    public static function escape($string)
+    {
+        return "'" . self::escape_string($string) . "'";
     }
 
 
