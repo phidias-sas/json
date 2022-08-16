@@ -88,6 +88,12 @@ class Table extends \Phidias\JsonDb\Table
         return $this;
     }
 
+    public function search($searchString)
+    {
+        $this->collection->search($searchString);
+        return $this;
+    }
+
     public function fetch()
     {
         $retval = [];
