@@ -432,14 +432,15 @@ class Table extends \Phidias\JsonDb\Table
 
     public function order($order)
     {
-        /* Parse "order" array
+        /*
+        Parse "order" array
         [
             {
-                "property": "id",
+                "value": "$.id",
                 "desc": false
             },
             {
-                "property": "foo.name",
+                "value": "$.foo.name",
                 "desc": true
             }
         ]
@@ -447,14 +448,19 @@ class Table extends \Phidias\JsonDb\Table
         if (is_array($order)) {
             $orderColumns = [];
             foreach ($order as $orderData) {
-                if (!isset($orderData->property)) {
+                if (!isset($orderData->value)) {
                     continue;
                 }
 
-                if (substr($orderData->property, 0, 6) == '$meta.') {
-                    $propertyValue = substr($orderData->property, 6);
+                if (substr($orderData->value, 0, 6) == '$meta.') {
+                    $propertyValue = substr($orderData->value, 6);
+                } else if (substr($orderData->value, 0, 8) == '$.$meta.') {
+                    $propertyValue = substr($orderData->value, 8);
                 } else {
-                    $propertyValue = "JSON_UNQUOTE(JSON_EXTRACT(data, '$.{$orderData->property}'))";
+                    $jsonPath = substr($orderData->value, 0, 2) == '$.'
+                        ? $orderData->value
+                        : '$.'.$orderData->value;
+                    $propertyValue = "JSON_UNQUOTE(JSON_EXTRACT(data, '{$jsonPath}'))";
                 }
 
                 $isDesc = isset($orderData->desc) && $orderData->desc;
