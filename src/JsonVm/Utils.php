@@ -148,8 +148,8 @@ class Utils
 
         if (is_array($string)) {
             $retval = [];
-            foreach ($string as $substring) {
-                $retval[] = self::parse($substring, $sourceData, $preserveUndefined);
+            foreach ($string as $key => $substring) {
+                $retval[$key] = self::parse($substring, $sourceData, $preserveUndefined);
             }
             return $retval;
         }
