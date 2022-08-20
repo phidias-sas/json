@@ -34,6 +34,10 @@ class Table extends \Phidias\JsonDb\Table
 
     public function translateFieldName($fieldName)
     {
+        if (substr($fieldName, 0, 2) == '$.') {
+            $fieldName = substr($fieldName, 2);
+        }
+
         if ($fieldName == "id") {
             return "customId";
         } else if (substr($fieldName, 0, 6) == '$meta.') {
@@ -451,20 +455,9 @@ class Table extends \Phidias\JsonDb\Table
                 if (!isset($orderData->value)) {
                     continue;
                 }
-
-                if (substr($orderData->value, 0, 6) == '$meta.') {
-                    $propertyValue = substr($orderData->value, 6);
-                } else if (substr($orderData->value, 0, 8) == '$.$meta.') {
-                    $propertyValue = substr($orderData->value, 8);
-                } else {
-                    $jsonPath = substr($orderData->value, 0, 2) == '$.'
-                        ? $orderData->value
-                        : '$.'.$orderData->value;
-                    $propertyValue = "JSON_UNQUOTE(JSON_EXTRACT(data, '{$jsonPath}'))";
-                }
-
+                $fieldName = $this->translateFieldName($orderData->value);
                 $isDesc = isset($orderData->desc) && $orderData->desc;
-                $orderColumns[] = $propertyValue . ($isDesc ? ' DESC' : ' ASC');
+                $orderColumns[] = $fieldName . ($isDesc ? ' DESC' : ' ASC');
             }
 
             if (!count($orderColumns)) {
