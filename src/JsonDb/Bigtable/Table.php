@@ -509,6 +509,8 @@ class Table extends \Phidias\JsonDb\Table
                 } else if (isset($record->{"x." . $attributeName})) {
                     $retvalItem->$attributeName = json_decode($record->{"x." . $attributeName});
                     unset($record->{"x." . $attributeName});
+                } else if (isset($record->$attributeName)) {
+                    $retvalItem->$attributeName = $record->$attributeName;
                 } else {
                     // Se habia solicitado el atributo mediante this->attribute
                     // pero en ningun lado de los resultados se puede encontrar
