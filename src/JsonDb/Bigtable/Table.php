@@ -312,9 +312,9 @@ class Table extends \Phidias\JsonDb\Table
             ->match("tableId", $this->tableName)
             ->match("customId", $recordId)
             ->limit(1)
-            // ->delete();
-            ->set("dateDeleted", time())
-            ->update();
+            ->delete();
+            // ->set("dateDeleted", time())
+            // ->update();
 
         return $record; // fare thee well
     }
