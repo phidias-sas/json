@@ -6,7 +6,6 @@ class OpDate
 {
     private static function sanitizeFieldName($fieldName)
     {
-        // return "IFNULL(UNIX_TIMESTAMP($fieldName), $fieldName)";
         return "IF(UNIX_TIMESTAMP($fieldName), UNIX_TIMESTAMP($fieldName), $fieldName)";
     }
 
@@ -22,8 +21,8 @@ class OpDate
         // UNIX_TIMESTAMP("1982-05-05 03:04:05")
 
         $conditions = [];
-        $conditions[] = "$fieldName >= UNIX_TIMESTAMP('{$args[0]}')";
-        $conditions[] = "$fieldName <= UNIX_TIMESTAMP('{$args[1]}')";
+        $conditions[] = "$fieldName >= UNIX_TIMESTAMP('{$args[0]} 00:00:00')";
+        $conditions[] = "$fieldName <= UNIX_TIMESTAMP('{$args[1]} 23:59:59')";
 
         return "(" . implode(" AND ", $conditions) . ")";
     }

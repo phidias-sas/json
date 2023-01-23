@@ -89,6 +89,10 @@ class Utils
 
     public static function escape($string)
     {
+        if (is_numeric($string)) {
+            return $string;
+        }
+
         return "'" . self::escape_string($string) . "'";
     }
 

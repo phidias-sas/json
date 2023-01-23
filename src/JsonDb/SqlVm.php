@@ -19,6 +19,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineStatement('or', [$className, 'stmtOr']);
         $this->defineStatement('not', [$className, 'stmtNot']);
         $this->defineStatement('op', [$className, 'stmtOp']);
+        $this->defineStatement('search', [$className, 'stmtSearch']);
 
         $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
         $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
@@ -148,6 +149,58 @@ class SqlVm extends \Phidias\JsonVm\Vm
     }
 
 
+    public static function stmtSearch($expr, $vm)
+    {
+        if (!isset($expr->search)) {
+            return "0";
+        }
+
+        if (
+            !isset($expr->search->string)
+            || !isset($expr->search->fields)
+            || !is_array($expr->search->fields)
+        ) {
+            return "0";
+        }
+
+        $searchString = trim($expr->search->string);
+        if (!$searchString) {
+            return "0";
+        }
+
+        $sanitizedTargetFields = [];
+        foreach ($expr->search->fields as $fieldName) {
+            if ($vm->translationFunction) {
+                $trnCallabale = $vm->translationFunction;
+                $fieldName = $trnCallabale($fieldName);
+            }
+            // $sanitizedTargetFields[] = $fieldName;
+            $sanitizedTargetFields[] = "COALESCE($fieldName,'')";
+        }
+        $searchTargetField = "CONCAT(" . implode(", ", $sanitizedTargetFields) . ")";
+
+
+        $wordConditions = [];
+        // No partir por espacios en cadenas entre comillas
+        $words = preg_split('/("[^"]*")|\h+/', $searchString, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+
+        foreach ($words as $word) {
+            if (!$word = trim($word)) {
+                continue;
+            }
+
+            if (substr($word, 0, 1) == '"') {
+                $word = substr($word, 1, -1);
+            }
+
+            $word = str_replace('%', '\%', $word);
+
+            $wordConditions[] = "$searchTargetField LIKE " . DbUtils::escape('%'.$word.'%');
+        }
+
+        return implode(" AND ", $wordConditions);
+    }
+
     public static function enum_any($fieldName, $args)
     {
         if (!is_array($args) || !count($args)) {
@@ -166,12 +219,14 @@ class SqlVm extends \Phidias\JsonVm\Vm
     /* Basic SQL operators */
     public static function op_true($fieldName)
     {
-        return "$fieldName IN ('true', '1')";
+        // return "$fieldName IN (true, 'true', '1')";
+        return "($fieldName)";
     }
 
     public static function op_false($fieldName)
     {
-        return "$fieldName IN ('null', 'false', '0')";
+        // return "$fieldName IN (false, 'false', 'null', '0')";
+        return "NOT ($fieldName)";
     }
 
     public static function op_between($fieldName, $args)
