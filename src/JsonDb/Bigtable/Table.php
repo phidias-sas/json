@@ -442,11 +442,13 @@ class Table extends \Phidias\JsonDb\Table
         Parse "order" array
         [
             {
-                "value": "$.id",
+                // deprecate "value": "$.id",
+                "field": "$.id",
                 "desc": false
             },
             {
-                "value": "$.foo.name",
+                // deprecate "value": "$.foo.name",
+                "field": "$.foo.name",
                 "desc": true
             }
         ]
@@ -454,10 +456,10 @@ class Table extends \Phidias\JsonDb\Table
         if (is_array($order)) {
             $orderColumns = [];
             foreach ($order as $orderData) {
-                if (!isset($orderData->value)) {
+                if (!isset($orderData->field) && !isset($orderData->value)) {
                     continue;
                 }
-                $fieldName = $this->translateFieldName($orderData->value);
+                $fieldName = $this->translateFieldName($orderData->field || $orderData->value); // deprecate "value", use "field" instead
                 $isDesc = isset($orderData->desc) && $orderData->desc;
                 $orderColumns[] = $fieldName . ($isDesc ? ' DESC' : ' ASC');
             }
