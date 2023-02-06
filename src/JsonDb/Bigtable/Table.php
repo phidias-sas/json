@@ -260,13 +260,15 @@ class Table extends \Phidias\JsonDb\Table
         }
 
         // Actualizar objeto de datos
-        $hasChanges = false;
-        foreach ($data as $propName => $incomingValue) {
-            if (!isset($record->data->$propName) || $record->data->$propName != $incomingValue) {
-                $record->data->$propName = $incomingValue;
-                $hasChanges = true;
-            }
-        }
+        // $hasChanges = false;
+        // foreach ($data as $propName => $incomingValue) {
+        //     if (!isset($record->data->$propName) || $record->data->$propName != $incomingValue) {
+        //         $record->data->$propName = $incomingValue;
+        //         $hasChanges = true;
+        //     }
+        // }
+        $hasChanges = true;
+        $record->data = JsonUtils::merge($record->data, $data);
 
         if ($hasChanges) {
             $record->dateModified = time();
@@ -313,8 +315,8 @@ class Table extends \Phidias\JsonDb\Table
             ->match("customId", $recordId)
             ->limit(1)
             ->delete();
-            // ->set("dateDeleted", time())
-            // ->update();
+        // ->set("dateDeleted", time())
+        // ->update();
 
         return $record; // fare thee well
     }
