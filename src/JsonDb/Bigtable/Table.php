@@ -458,10 +458,14 @@ class Table extends \Phidias\JsonDb\Table
         if (is_array($order)) {
             $orderColumns = [];
             foreach ($order as $orderData) {
-                if (!isset($orderData->field) && !isset($orderData->value)) {
+                // deprecate "value", use "field" instead
+                if (isset($orderData->field)) {
+                    $fieldName = $this->translateFieldName($orderData->field);
+                } else if (isset($orderData->value)) {
+                    $fieldName = $this->translateFieldName($orderData->value);
+                } else {
                     continue;
                 }
-                $fieldName = $this->translateFieldName($orderData->field || $orderData->value); // deprecate "value", use "field" instead
                 $isDesc = isset($orderData->desc) && $orderData->desc;
                 $orderColumns[] = $fieldName . ($isDesc ? ' DESC' : ' ASC');
             }
