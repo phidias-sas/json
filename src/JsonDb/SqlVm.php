@@ -177,7 +177,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
             // $sanitizedTargetFields[] = $fieldName;
             $sanitizedTargetFields[] = "COALESCE($fieldName,'')";
         }
-        $searchTargetField = "CONCAT(" . implode(", ", $sanitizedTargetFields) . ")";
+        $searchTargetField = "CONCAT(" . implode(", ' ', ", $sanitizedTargetFields) . ")";
 
 
         $wordConditions = [];
