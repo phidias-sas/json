@@ -195,7 +195,7 @@ class SqlVm extends \Phidias\JsonVm\Vm
 
             $word = str_replace('%', '\%', $word);
 
-            $wordConditions[] = "$searchTargetField LIKE " . DbUtils::escape('%'.$word.'%');
+            $wordConditions[] = "$searchTargetField LIKE " . DbUtils::escape('%' . $word . '%');
         }
 
         return implode(" AND ", $wordConditions);
@@ -207,12 +207,14 @@ class SqlVm extends \Phidias\JsonVm\Vm
             return "0";
         }
 
-        $items = [];
+        $comparisons = [];
         foreach ($args as $arg) {
-            $items[] = DbUtils::escape($arg);
+            $comparisons[] = $arg === null
+                ? "$fieldName IS NULL"
+                : $fieldName . ' = ' . DbUtils::escape($arg);
         }
 
-        return "$fieldName IN (" . implode(", ", $items) . ")";
+        return "(" . implode(" OR ", $comparisons) . ")";
     }
 
 
