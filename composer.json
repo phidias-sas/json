@@ -12,7 +12,7 @@
     "autoload": {
         "psr-4": {
             "Phidias\\JsonDb\\": "src/JsonDb/",
-            "Phidias\\Json\\": "src/json/"
+            "Phidias\\Json\\": "src/Json/"
         }
     }
 }
