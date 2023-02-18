@@ -2,6 +2,7 @@
 
 namespace Phidias\JsonDb;
 
+use Phidias\Json\Sql\Vm as SqlVm;
 use Exception;
 
 class Dataset

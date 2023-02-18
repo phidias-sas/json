@@ -1,6 +1,6 @@
 {
     "name": "phidias/json",
-    "description": "JsonDb, JsonVm and JSON document parser and validation schema",
+    "description": "JSON utilities to generate SQL queries and evaluate VM statements",
     "license": "GPL-3.0",
     "authors": [
         {
@@ -11,9 +11,8 @@
 
     "autoload": {
         "psr-4": {
-            "Phidias\\Json\\": "_src/",
             "Phidias\\JsonDb\\": "src/JsonDb/",
-            "Phidias\\JsonVm\\": "src/JsonVm/"
+            "Phidias\\Json\\": "src/json/"
         }
     }
 }

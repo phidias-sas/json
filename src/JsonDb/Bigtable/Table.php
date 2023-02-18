@@ -5,7 +5,7 @@ namespace Phidias\JsonDb\Bigtable;
 use \Phidias\JsonDb\Bigtable\Record\Entity as Record;
 use \Phidias\JsonDb\Bigtable\Index\Entity as Index;
 
-use Phidias\JsonVm\Utils as JsonUtils;
+use Phidias\Json\Utils as JsonUtils;
 
 class Table extends \Phidias\JsonDb\Table
 {

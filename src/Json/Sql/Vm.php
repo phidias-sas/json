@@ -1,10 +1,10 @@
 <?php
 
-namespace Phidias\JsonDb;
+namespace Phidias\Json\Sql;
 
 use Phidias\JsonDb\Utils as DbUtils;
 
-class SqlVm extends \Phidias\JsonVm\Vm
+class Vm extends \Phidias\Json\Vm
 {
     public $operators;
     public $translationFunction;
@@ -24,22 +24,22 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
         $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
 
-        $this->defineOperator('number.eq', ['\Phidias\JsonDb\Operators\OpNumber', 'eq']);
-        $this->defineOperator('number.gt', ['\Phidias\JsonDb\Operators\OpNumber', 'gt']);
-        $this->defineOperator('number.gte', ['\Phidias\JsonDb\Operators\OpNumber', 'gte']);
-        $this->defineOperator('number.lt', ['\Phidias\JsonDb\Operators\OpNumber', 'lt']);
-        $this->defineOperator('number.lte', ['\Phidias\JsonDb\Operators\OpNumber', 'lte']);
-        $this->defineOperator('number.between', ['\Phidias\JsonDb\Operators\OpNumber', 'between']);
+        $this->defineOperator('number.eq', ['\Phidias\Json\Sql\Operators\OpNumber', 'eq']);
+        $this->defineOperator('number.gt', ['\Phidias\Json\Sql\Operators\OpNumber', 'gt']);
+        $this->defineOperator('number.gte', ['\Phidias\Json\Sql\Operators\OpNumber', 'gte']);
+        $this->defineOperator('number.lt', ['\Phidias\Json\Sql\Operators\OpNumber', 'lt']);
+        $this->defineOperator('number.lte', ['\Phidias\Json\Sql\Operators\OpNumber', 'lte']);
+        $this->defineOperator('number.between', ['\Phidias\Json\Sql\Operators\OpNumber', 'between']);
 
-        $this->defineOperator('string.same', ['\Phidias\JsonDb\Operators\OpString', 'same']);
-        $this->defineOperator('string.like', ['\Phidias\JsonDb\Operators\OpString', 'like']);
-        $this->defineOperator('string.eq', ['\Phidias\JsonDb\Operators\OpString', 'eq']);
-        $this->defineOperator('string.neq', ['\Phidias\JsonDb\Operators\OpString', 'neq']);
-        $this->defineOperator('string.includes', ['\Phidias\JsonDb\Operators\OpString', 'includes']);
-        $this->defineOperator('string.startsWith', ['\Phidias\JsonDb\Operators\OpString', 'startsWith']);
-        $this->defineOperator('string.endsWith', ['\Phidias\JsonDb\Operators\OpString', 'endsWith']);
-        $this->defineOperator('string.empty', ['\Phidias\JsonDb\Operators\OpString', 'empty']);
-        $this->defineOperator('string.nempty', ['\Phidias\JsonDb\Operators\OpString', 'nempty']);
+        $this->defineOperator('string.same', ['\Phidias\Json\Sql\Operators\OpString', 'same']);
+        $this->defineOperator('string.like', ['\Phidias\Json\Sql\Operators\OpString', 'like']);
+        $this->defineOperator('string.eq', ['\Phidias\Json\Sql\Operators\OpString', 'eq']);
+        $this->defineOperator('string.neq', ['\Phidias\Json\Sql\Operators\OpString', 'neq']);
+        $this->defineOperator('string.includes', ['\Phidias\Json\Sql\Operators\OpString', 'includes']);
+        $this->defineOperator('string.startsWith', ['\Phidias\Json\Sql\Operators\OpString', 'startsWith']);
+        $this->defineOperator('string.endsWith', ['\Phidias\Json\Sql\Operators\OpString', 'endsWith']);
+        $this->defineOperator('string.empty', ['\Phidias\Json\Sql\Operators\OpString', 'empty']);
+        $this->defineOperator('string.nempty', ['\Phidias\Json\Sql\Operators\OpString', 'nempty']);
 
         $this->defineOperator('enum.any', [$className, 'enum_any']);
 
@@ -48,17 +48,17 @@ class SqlVm extends \Phidias\JsonVm\Vm
         $this->defineOperator('enum.all', [$className, 'enum_any']);
 
 
-        $this->defineOperator('array.eq', ['\Phidias\JsonDb\Operators\OpArray', 'eq']);
-        $this->defineOperator('array.hasAny', ['\Phidias\JsonDb\Operators\OpArray', 'hasAny']);
-        $this->defineOperator('array.hasAll', ['\Phidias\JsonDb\Operators\OpArray', 'hasAll']);
+        $this->defineOperator('array.eq', ['\Phidias\Json\Sql\Operators\OpArray', 'eq']);
+        $this->defineOperator('array.hasAny', ['\Phidias\Json\Sql\Operators\OpArray', 'hasAny']);
+        $this->defineOperator('array.hasAll', ['\Phidias\Json\Sql\Operators\OpArray', 'hasAll']);
 
-        $this->defineOperator('date.between', ['\Phidias\JsonDb\Operators\OpDate', 'between']);
-        $this->defineOperator('date.eq', ['\Phidias\JsonDb\Operators\OpDate', 'eq']);
-        $this->defineOperator('date.neq', ['\Phidias\JsonDb\Operators\OpDate', 'neq']);
-        $this->defineOperator('date.gt', ['\Phidias\JsonDb\Operators\OpDate', 'gt']);
-        $this->defineOperator('date.gte', ['\Phidias\JsonDb\Operators\OpDate', 'gte']);
-        $this->defineOperator('date.lt', ['\Phidias\JsonDb\Operators\OpDate', 'lt']);
-        $this->defineOperator('date.lte', ['\Phidias\JsonDb\Operators\OpDate', 'lte']);
+        $this->defineOperator('date.between', ['\Phidias\Json\Sql\Operators\OpDate', 'between']);
+        $this->defineOperator('date.eq', ['\Phidias\Json\Sql\Operators\OpDate', 'eq']);
+        $this->defineOperator('date.neq', ['\Phidias\Json\Sql\Operators\OpDate', 'neq']);
+        $this->defineOperator('date.gt', ['\Phidias\Json\Sql\Operators\OpDate', 'gt']);
+        $this->defineOperator('date.gte', ['\Phidias\Json\Sql\Operators\OpDate', 'gte']);
+        $this->defineOperator('date.lt', ['\Phidias\Json\Sql\Operators\OpDate', 'lt']);
+        $this->defineOperator('date.lte', ['\Phidias\Json\Sql\Operators\OpDate', 'lte']);
 
         $this->translationFunction = null;
     }

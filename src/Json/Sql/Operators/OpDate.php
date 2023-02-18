@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\JsonDb\Operators;
+namespace Phidias\Json\Sql\Operators;
 
 class OpDate
 {

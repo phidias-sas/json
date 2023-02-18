@@ -1,10 +1,69 @@
 <?php
 
-namespace Phidias\JsonVm;
+namespace Phidias\Json;
 
 class Utils
 {
     const UNCHANGED = '--UNCHANGED--';
+
+    /*
+    Given a flat associative array:
+    [
+        'foo' => 'Hello',
+        'thing1' => 'Thing value 1',
+        'thing2' => 'Thing value 2',
+        'thing3' => 'Thing value 3',
+        'thing4' => 'Thing value 4',
+        'data' => '{"hello":"This is a JSON encoded string"}'
+    ]
+
+    and a TRANSFORMATION object
+    Which is a representation of the desired output
+    Property values correspond to array keys
+
+    {
+        "title": "foo",
+        "things": {
+            "one": "thing1",
+            "two": "thing2",
+            "three": "thing3",
+            "four": "thing4"
+        },
+        "decodedData": {"$json_decode": "data"}   // objects with a single property that begin with "$" are treated as filter functions
+    }
+
+    returns an object with the desired structure, matched values, and ran through filters
+
+    {
+        "title": "Hello",
+        "things": {
+            "one": "Thing value 1",
+            "two": "Thing value 2",
+            "three": "Thing value 3",
+            "four": "Thing value 4"
+        },
+        "decodedData": { // this is the result of json_decode($array['data'])
+            "hello":"This is a JSON encoded string"
+        }
+    }
+    */
+    public static function arrayToObject($array, $object)
+    {
+        $result = new \stdClass;
+        foreach ($object as $propName => $arrayKey) {
+            if (isset($arrayKey->{'$json_decode'})) {
+                $result->{$propName} = json_decode($array[$arrayKey->{'$json_decode'}]);
+            } elseif (is_object($arrayKey)) {
+                //  value is a nested object
+                $result->{$propName} = self::arrayToObject($array, $arrayKey);
+            } else {
+                // otherwise, use the value as a key to retrieve value from the associative array
+                $result->{$propName} = $array[$arrayKey];
+            }
+        }
+        return $result;
+    }
+
 
     public static function diff($oldValue, $newValue)
     {

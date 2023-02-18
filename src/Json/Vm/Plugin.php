@@ -1,6 +1,6 @@
 <?php
 
-namespace Phidias\JsonVm;
+namespace Phidias\Json\Vm;
 
 class Plugin
 {

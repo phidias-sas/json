@@ -1,8 +1,6 @@
 <?php
 
-namespace Phidias\JsonDb\Operators;
-
-use Phidias\JsonDb\Utils as DbUtils;
+namespace Phidias\Json\Sql\Operators;
 
 class OpArray
 {
