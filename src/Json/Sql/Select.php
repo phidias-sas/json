@@ -84,7 +84,15 @@ class Select
         }
         $select = rtrim($select, ", ");
 
-        $from = "{$query->from->table} as {$query->from->as}";
+        $from = "";
+        if (is_string($query->from)) {
+            $from = $query->from;
+        } else if (isset($query->from->table)) {
+            $from = $query->from->table;
+            if (isset($query->from->as)) {
+                $from .= " as {$query->from->as}";
+            }
+        }
 
         $join = "";
         if (isset($query->join) && is_array($query->join)) {
@@ -134,8 +142,8 @@ class Select
 
     public static function rowToObject($arrRow, $jsonSelect)
     {
-        if (is_array($jsonSelect->select)) {
-            // select is flat a column array.  $arrRow has every returned column as a key.
+        if (is_array($jsonSelect->select) || is_string($jsonSelect->select)) {
+            // select is flat a column array or specific string.  $arrRow has every returned column as a key.
             return (object)$arrRow;
         }
 
