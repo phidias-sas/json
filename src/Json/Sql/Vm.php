@@ -151,34 +151,33 @@ class Vm extends \Phidias\Json\Vm
 
     public static function stmtSearch($expr, $vm)
     {
-        if (!isset($expr->search)) {
+        if (!isset($expr->search->fields)) {
             return "0";
         }
 
-        if (
-            !isset($expr->search->string)
-            || !isset($expr->search->fields)
-            || !is_array($expr->search->fields)
-        ) {
-            return "0";
-        }
+        $searchString = isset($expr->search->string)
+            ? trim($expr->search->string)
+            : '';
 
-        $searchString = trim($expr->search->string);
         if (!$searchString) {
             return "0";
         }
 
+        $fields = is_array($expr->search->fields)
+            ? $expr->search->fields
+            : ($expr->search->fields ? [$expr->search->fields] : []);
+
         $sanitizedTargetFields = [];
-        foreach ($expr->search->fields as $fieldName) {
+        foreach ($fields as $fieldName) {
             if ($vm->translationFunction) {
                 $trnCallabale = $vm->translationFunction;
                 $fieldName = $trnCallabale($fieldName);
             }
-            // $sanitizedTargetFields[] = $fieldName;
-            $sanitizedTargetFields[] = "COALESCE($fieldName,'')";
+            $sanitizedTargetFields[] = "COALESCE($fieldName, '')";
         }
-        $searchTargetField = "CONCAT(" . implode(", ' ', ", $sanitizedTargetFields) . ")";
-
+        $searchTargetField = count($sanitizedTargetFields) > 1
+            ? "CONCAT(" . implode(", ' ', ", $sanitizedTargetFields) . ")"
+            : $sanitizedTargetFields[0];
 
         $wordConditions = [];
         // No partir por espacios en cadenas entre comillas
