@@ -62,6 +62,18 @@ class Select
     */
     public static function toString($query)
     {
+        if (!$query) {
+            return "";
+        }
+
+        if (is_string($query)) {
+            return $query;
+        }
+
+        if (is_array($query)) {
+            $query = json_decode(json_encode($query));
+        }
+
         $selectColumns = [];
         if (is_object($query->select)) { // determine columns when SELECT is an object
             $selectColumns = self::getSelectColumns($query->select);
@@ -117,17 +129,19 @@ class Select
         }
 
         $order = "";
-        if (isset($query->order)) {
+        if (isset($query->order) || isset($query->orderBy)) {
+            $queryOrder = isset($query->order) ? $query->order : $query->orderBy;
+
             $order = "ORDER BY ";
-            if (is_array($query->order)) {
-                foreach ($query->order as $orderItem) {
+            if (is_array($queryOrder)) {
+                foreach ($queryOrder as $orderItem) {
                     $column = self::sanitizeFieldName($orderItem->field);
                     $direction = isset($orderItem->desc) && $orderItem->desc ? "DESC" : "ASC";
                     $order .= "{$column} {$direction}, ";
                 }
                 $order = rtrim($order, ", ");
-            } else if (is_string($query->order)) {
-                $order .= $query->order;
+            } else if (is_string($queryOrder)) {
+                $order .= $queryOrder;
             }
         }
 
@@ -140,8 +154,16 @@ class Select
     }
 
 
-    public static function rowToObject($arrRow, $jsonSelect)
+    public static function rowToObject($arrRow, $jsonSelect = null)
     {
+        if (!$jsonSelect) {
+            return (object)$arrRow;
+        }
+
+        if (!is_object($jsonSelect)) {
+            $jsonSelect = json_decode(json_encode($jsonSelect));
+        }
+
         if (is_array($jsonSelect->select) || is_string($jsonSelect->select)) {
             // select is flat a column array or specific string.  $arrRow has every returned column as a key.
             return (object)$arrRow;
