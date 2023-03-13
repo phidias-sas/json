@@ -23,6 +23,7 @@ class Vm extends \Phidias\Json\Vm
 
         $this->defineOperator('boolean.isTrue', [$className, 'op_true']);
         $this->defineOperator('boolean.isFalse', [$className, 'op_false']);
+        $this->defineOperator('boolean.eq', [$className, 'op_bool_eq']);
 
         $this->defineOperator('number.eq', ['\Phidias\Json\Sql\Operators\OpNumber', 'eq']);
         $this->defineOperator('number.gt', ['\Phidias\Json\Sql\Operators\OpNumber', 'gt']);
@@ -218,16 +219,21 @@ class Vm extends \Phidias\Json\Vm
 
 
     /* Basic SQL operators */
+    public static function op_bool_eq($fieldName, $args)
+    {
+        return $args ? self::op_true($fieldName) : self::op_false($fieldName);
+    }
+
     public static function op_true($fieldName)
     {
-        // return "$fieldName IN (true, 'true', '1')";
-        return "($fieldName)";
+        return "$fieldName IN ('true', '1')";
+        // return "($fieldName)"; // not really working with JSON_UNQUOTE(JSON_EXTRACT(
     }
 
     public static function op_false($fieldName)
     {
-        // return "$fieldName IN (false, 'false', 'null', '0')";
-        return "NOT ($fieldName)";
+        return "$fieldName IN ('false', 'null', '0') OR $fieldName IS NULL";
+        // return "NOT ($fieldName)"; // not really working with JSON_UNQUOTE(JSON_EXTRACT(
     }
 
     public static function op_between($fieldName, $args)
