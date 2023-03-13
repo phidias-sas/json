@@ -47,7 +47,7 @@ class OpString
         return "$fieldName LIKE '%$args'";
     }
 
-    public static function empty($fieldName, $args)
+    public static function isEmpty($fieldName, $args)
     {
         return "($fieldName = '' OR $fieldName IS NULL)";
     }

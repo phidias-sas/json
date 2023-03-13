@@ -38,7 +38,7 @@ class Vm extends \Phidias\Json\Vm
         $this->defineOperator('string.includes', ['\Phidias\Json\Sql\Operators\OpString', 'includes']);
         $this->defineOperator('string.startsWith', ['\Phidias\Json\Sql\Operators\OpString', 'startsWith']);
         $this->defineOperator('string.endsWith', ['\Phidias\Json\Sql\Operators\OpString', 'endsWith']);
-        $this->defineOperator('string.empty', ['\Phidias\Json\Sql\Operators\OpString', 'empty']);
+        $this->defineOperator('string.empty', ['\Phidias\Json\Sql\Operators\OpString', 'isEmpty']);
         $this->defineOperator('string.nempty', ['\Phidias\Json\Sql\Operators\OpString', 'nempty']);
 
         $this->defineOperator('enum.any', [$className, 'enum_any']);
