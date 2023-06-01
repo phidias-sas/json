@@ -189,6 +189,11 @@ class Select
             $quote = $matches[2][$i];
             $path = $matches[3][$i];
             // $replacement = "JSON_UNQUOTE(JSON_EXTRACT($field, $quote{$path}$quote))";
+
+            if (strpos($path, '.') === false) {
+                $path = '"'.$path.'"';
+            }
+
             $replacement = "IF(JSON_EXTRACT($field, $quote{$path}$quote) = 'null', NULL, JSON_UNQUOTE(JSON_EXTRACT($field, $quote{$path}$quote)))";
             $query = str_replace($jsonArrow, $replacement, $query);
         }
