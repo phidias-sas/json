@@ -6,7 +6,7 @@ class OpArray
 {
     public static function eq($fieldName, $args)
     {
-        $encodedArgs = "'" . json_encode($args) . "'";
+        $encodedArgs = "'" . json_encode($args, JSON_UNESCAPED_UNICODE) . "'";
         return "JSON_CONTAINS($fieldName, $encodedArgs) AND JSON_CONTAINS($encodedArgs, $fieldName)";
     }
 
@@ -14,7 +14,7 @@ class OpArray
     {
         $conditions = [];
         foreach ($args as $arg) {
-            $encodedArg = "'" . json_encode($arg) . "'";
+            $encodedArg = "'" . json_encode($arg, JSON_UNESCAPED_UNICODE) . "'";
             $conditions[] = "JSON_CONTAINS($fieldName, $encodedArg)";
         }
 
@@ -23,7 +23,7 @@ class OpArray
 
     public static function hasAll($fieldName, $args)
     {
-        $encodedArgs = "'" . json_encode($args) . "'";
+        $encodedArgs = "'" . json_encode($args, JSON_UNESCAPED_UNICODE) . "'";
         return "JSON_CONTAINS($fieldName, $encodedArgs)";
     }
 }
