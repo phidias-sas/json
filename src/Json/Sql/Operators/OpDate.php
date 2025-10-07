@@ -19,10 +19,12 @@ class OpDate
 
         // Convert YYYY-MM-DD to timestamp:
         // UNIX_TIMESTAMP("1982-05-05 03:04:05")
+        $startDate = strtotime($args[0].'00:00:00');
+        $endDate   = strtotime($args[0].'23:59:59');
 
         $conditions = [];
-        $conditions[] = "$fieldName >= UNIX_TIMESTAMP('{$args[0]} 00:00:00')";
-        $conditions[] = "$fieldName <= UNIX_TIMESTAMP('{$args[1]} 23:59:59')";
+        $conditions[] = "$fieldName >= $startDate";
+        $conditions[] = "$fieldName <= $endDate";
 
         return "(" . implode(" AND ", $conditions) . ")";
     }
